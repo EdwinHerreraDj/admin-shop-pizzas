@@ -3,52 +3,36 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Ingrediente extends Model
 {
+    protected $table = 'ingredientes';
+
     protected $fillable = [
         'nombre',
-        'categoria',
+        'categoria_id',
+        'activo',
     ];
 
-    // 🔹 Relación: un ingrediente puede estar en muchos artículos
-    public function articulos()
+    protected $casts = [
+        'categoria_id' => 'integer',
+        'activo' => 'boolean',
+    ];
+
+    public function categoria(): BelongsTo
     {
-        return $this->belongsToMany(Articulo::class, 'producto_ingredientes', 'ingrediente_id', 'producto_id')
-            ->withTimestamps();
+        return $this->belongsTo(CategoriaIngrediente::class, 'categoria_id');
     }
 
-    // 🔹 Relación: un ingrediente puede aplicarse a varios tipos de producto
-    // con precios personalizados
-    public function tiposProductos()
+    public function precios(): HasMany
     {
-        return $this->belongsToMany(TipoProducto::class, 'ingrediente_tipo_producto')
-            ->withPivot([
-                'precio_extra_pequena',
-                'precio_extra_mediana',
-                'precio_extra_grande',
-                'precio_extra_unico',
-            ])
-            ->withTimestamps();
+        return $this->hasMany(IngredientePrecio::class, 'ingrediente_id');
     }
 
-    // Para que el campo "precios" se exponga como atributo
-    protected $appends = ['precios'];
-
-    /**
-     * Devuelve los precios por tipo de producto listos para el frontend
-     */
-    public function getPreciosAttribute()
+    public function articuloIngredientes(): HasMany
     {
-        return $this->tiposProductos->mapWithKeys(function ($tipo) {
-            return [
-                $tipo->id => [
-                    'pequena' => $tipo->pivot->precio_extra_pequena,
-                    'mediana' => $tipo->pivot->precio_extra_mediana,
-                    'grande' => $tipo->pivot->precio_extra_grande,
-                    'unico' => $tipo->pivot->precio_extra_unico,
-                ],
-            ];
-        });
+        return $this->hasMany(ArticuloIngrediente::class, 'ingrediente_id');
     }
 }

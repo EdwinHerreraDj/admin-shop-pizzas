@@ -13,6 +13,18 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call([
+            TipoProductoSeeder::class,
+            TamanoSeeder::class,
+            CategoriaIngredienteSeeder::class,
+            IngredienteSeeder::class,
+            CategoriaArticuloSeeder::class,
+            ArticuloSeeder::class,
+            ArticuloPrecioSeeder::class,
+            IngredientePrecioSeeder::class,
+            ArticuloIngredienteSeeder::class,
+        ]);
+
         \App\Models\User::factory(1)->create([
             'name' => 'Alminares',
             'email' => 'super@alminares.es',
@@ -21,6 +33,5 @@ class DatabaseSeeder extends Seeder
             'password' => bcrypt('bb161077'),
             'remember_token' => Str::random(10),
         ]);
-
     }
 }

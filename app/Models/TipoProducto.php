@@ -2,31 +2,37 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class TipoProducto extends Model
 {
-    use HasFactory;
+    protected $table = 'tipos_producto';
 
-    protected $table = 'tipos_productos';
+    protected $fillable = [
+        'nombre',
+        'usa_tamanos',
+    ];
 
-    protected $fillable = ['nombre'];
+    protected $casts = [
+        'usa_tamanos' => 'boolean',
+    ];
 
-    public function articulos()
+    public function articulos(): HasMany
     {
-        return $this->hasMany(Articulo::class);
+        return $this->hasMany(Articulo::class, 'tipo_producto_id');
     }
 
-    public function ingredientes()
+    public function ingredientePrecios(): HasMany
     {
-        return $this->belongsToMany(Ingrediente::class, 'ingrediente_tipo_producto')
-            ->withPivot([
-                'precio_extra_pequena',
-                'precio_extra_mediana',
-                'precio_extra_grande',
-                'precio_extra_unico',
-            ])
-            ->withTimestamps();
+        return $this->hasMany(IngredientePrecio::class, 'tipo_producto_id');
+    }
+
+    public function tamanos()
+    {
+        return $this->belongsToMany(
+            Tamano::class,
+            'tipo_producto_tamano'
+        );
     }
 }

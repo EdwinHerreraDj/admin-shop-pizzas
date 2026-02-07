@@ -1,52 +1,158 @@
 <?php
 
-use App\Http\Controllers\ArticulosController;
-use App\Http\Controllers\CategoriaController;
-use App\Http\Controllers\IngredienteController;
-use App\Http\Controllers\LoginLogController;
-use App\Http\Controllers\ProductoController;
-use App\Http\Controllers\RoutingController;
-use App\Http\Controllers\TipoProductoController;
-use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
-require __DIR__.'/auth.php';
+use App\Http\Controllers\RoutingController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\LoginLogController;
+use App\Http\Controllers\Admin\TipoProductoController;
+use App\Http\Controllers\Admin\TamanoController;
+use App\Http\Controllers\Admin\CategoriaIngredienteController;
+use App\Http\Controllers\Admin\IngredienteController;
+use App\Http\Controllers\Admin\IngredientePrecioController;
+use App\Http\Controllers\Admin\ArticuloController;
+use App\Http\Controllers\Admin\ArticuloPrecioController;
 
-Route::group(['prefix' => '/', 'middleware' => 'auth'], function () {
-    Route::get('', [RoutingController::class, 'home'])->name('root');
+/* MODELOS */
+use App\Models\Articulo;
 
-    /* Rutas explicitas */
+
+/* NUEVO */
+use App\Http\Controllers\Admin\IngredienteApiController;
+
+require __DIR__ . '/auth.php';
+
+Route::middleware('auth')->group(function () {
+
+    /*
+    |--------------------------------------------------------------------------
+    | HOME / CORE
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/', [RoutingController::class, 'home'])->name('root');
     Route::get('/home', [RoutingController::class, 'home'])->name('home');
     Route::get('/logout', [RoutingController::class, 'logout'])->name('logout_action');
-    /* Control de CRUDS para los users */
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | USERS
+    |--------------------------------------------------------------------------
+    */
+
     Route::resource('users', UserController::class);
     Route::get('/login-logs', [LoginLogController::class, 'index'])->name('login.logs');
 
-    /* Urls products */
-    Route::get('/productos', [ProductoController::class, 'index'])->name('productos');
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - TIPOS DE PRODUCTO
+    |--------------------------------------------------------------------------
+    */
 
-    /* Urls categorias */
-    Route::post('/productos/categoria/crear', [CategoriaController::class, 'store'])->name('categorias');
-    Route::put('/productos/categoria/editar/{id}', [CategoriaController::class, 'edit'])->name('categoria.editar');
-    Route::delete('/productos/categoria/{id}', [CategoriaController::class, 'destroy'])->name('categoria.eliminar');
+    Route::get('/admin/tipos-producto', function () {
+        return view('admin.tipos-producto.index');
+    })->name('admin.tipos-producto.index');
 
-    /* Urls articulos */
-    Route::post('/productos/articulo/crear', [ArticulosController::class, 'store'])->name('articulos');
-    Route::put('/productos/articulo/editar/{id}', [ArticulosController::class, 'edit'])->name('articulo.editar');
-    Route::delete('/productos/articulo/{id}', [ArticulosController::class, 'destroy'])->name('articulo.eliminar');
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - TAMAÑOS
+    |--------------------------------------------------------------------------
+    */
 
-    /* Urls Tipo producto */
-    Route::post('/productos/tipo/crear', [TipoProductoController::class, 'store'])->name('tipos');
-    Route::delete('/productos/tipo/{id}', [TipoProductoController::class, 'destroy'])->name('tipo.eliminar');
-    Route::put('/productos/tipo/editar/{id}', [TipoProductoController::class, 'edit'])->name('tipo.editar');
 
-    /* Urls Ingredientes */
-    Route::post('/productos/ingrediente/crear', [IngredienteController::class, 'store'])->name('ingredientes');
-    Route::put('/productos/ingrediente/editar/{id}', [IngredienteController::class, 'edit'])->name('ingrediente.editar');
-    Route::delete('/productos/ingrediente/{id}', [IngredienteController::class, 'destroy'])->name('ingrediente.eliminar');
-    Route::get('/ingredientes/tipo/{id}', [IngredienteController::class, 'getByTipo'])->name('ingredientes.porTipo');
+    Route::get('/admin/tamanos', function () {
+        return view('admin.tamanos.index');
+    })->name('admin.tamanos.index');
 
-    /* Rutas dinamicas - Deben ir al final */
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - CATEGORÍAS DE INGREDIENTES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/admin/categorias-ingredientes', function () {
+        return view('admin.categorias-ingredientes.index');
+    })->name('admin.categorias-ingredientes.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - CATEGORÍAS DE INGREDIENTES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/admin/ingredientes', function () {
+        return view('admin.ingredientes.index');
+    })->name('admin.ingredientes.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - PRECIOS DE INGREDIENTES
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/admin/precios-ingredientes', function () {
+        return view('admin.precios-ingredientes.index');
+    })->name('admin.precios-ingredientes.index');
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - ARTÍCULOS
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::get('/admin/articulos', function () {
+        return view('admin.articulos.index');
+    })->name('admin.articulos.index');
+
+    /*
+|--------------------------------------------------------------------------
+| ADMIN - CATEGORÍAS DE ARTÍCULOS
+|--------------------------------------------------------------------------
+*/
+
+    Route::get('/admin/categorias-articulos', function () {
+        return view('admin.categorias-articulos.index');
+    })->name('admin.categorias-articulos.index');
+
+    /* Orden se los articulos dentro de las categorias */
+    Route::get('/admin/categorias-articulos/orden', function () {
+        return view('admin.categorias-articulos.orden');
+    })->name('admin.categorias-articulos.orden');
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - PRECIOS DE ARTÍCULOS
+    |--------------------------------------------------------------------------
+    */
+
+
+    Route::get('/admin/precios-articulos', function () {
+        return view('admin.precios-articulos.index');
+    })->name('admin.precios-articulos.index');
+
+
+    Route::get(
+        '/admin/articulos/{articulo}/ingredientes',
+        function (Articulo $articulo) {
+            return view('admin.articulos.ingredientes', compact('articulo'));
+        }
+    )->name('admin.articulos.ingredientes');
+
+
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | RUTAS DINÁMICAS — SIEMPRE AL FINAL
+    |--------------------------------------------------------------------------
+    */
+
     Route::get('{first}/{second}/{third}', [RoutingController::class, 'thirdLevel'])->name('third');
     Route::get('{first}/{second}', [RoutingController::class, 'secondLevel'])->name('second');
     Route::get('{any}', [RoutingController::class, 'root'])->name('any');

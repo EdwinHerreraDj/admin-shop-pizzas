@@ -3,13 +3,23 @@
 @section('content')
     <div class="grid lg:grid-cols-4 md:grid-cols-2 gap-6 mb-6">
         <!-- Botón Productos -->
-        <a href="{{ route('productos') }}"
+        <a href="/admin/articulos"
             class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition flex flex-col items-center justify-center">
             <div class="w-12 h-12 flex justify-center items-center rounded-full bg-primary/20 text-primary mb-4">
                 <i class="mgc_bread_line text-2xl"></i>
             </div>
             <h5 class="text-lg font-semibold">Productos</h5>
             <p class="text-sm text-gray-500 dark:text-gray-400">Gestiona las pizzas y demás artículos</p>
+        </a>
+
+        <!-- Botón Ingredientes -->
+        <a href="{{ route('admin.ingredientes.index') }}"
+            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition flex flex-col items-center justify-center">
+            <div class="w-12 h-12 flex justify-center items-center rounded-full bg-warning/20 text-warning mb-4">
+                <i class="mgc_apple_line text-2xl"></i>
+            </div>
+            <h5 class="text-lg font-semibold">Ingredientes</h5>
+            <p class="text-sm text-gray-500 dark:text-gray-400">Control de ingredientes y extras</p>
         </a>
 
         <!-- Botón Pedidos -->
@@ -32,15 +42,7 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">Gestión de clientes y empleados</p>
         </a>
 
-        <!-- Botón Ingredientes -->
-        <a href="#"
-            class="p-6 bg-white dark:bg-gray-800 rounded-lg shadow hover:shadow-lg transition flex flex-col items-center justify-center">
-            <div class="w-12 h-12 flex justify-center items-center rounded-full bg-warning/20 text-warning mb-4">
-                <i class="mgc_apple_line text-2xl"></i>
-            </div>
-            <h5 class="text-lg font-semibold">Ingredientes</h5>
-            <p class="text-sm text-gray-500 dark:text-gray-400">Control de ingredientes y extras</p>
-        </a>
+
     </div>
     <!-- Grid End -->
     <div class="grid 2xl:grid-cols-4 gap-6 mb-6">

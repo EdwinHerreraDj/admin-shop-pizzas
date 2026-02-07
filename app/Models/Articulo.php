@@ -2,56 +2,76 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Articulo extends Model
 {
-    use HasFactory;
-
     protected $table = 'articulos';
 
     protected $fillable = [
-        'categoria_id',
         'tipo_producto_id',
         'nombre',
-        'descripcion',
-        'imagen_url',
-        'precio_pequena',
-        'precio_mediana',
-        'precio_grande',
-        'precio_unico',
-        'es_personalizable',
+        'personalizable',
         'publicado',
+        'orden',
+        'hora_inicio_venta',
+        'hora_fin_venta',
+        'descripcion',
+        'imagen',
     ];
+
+    protected $appends = ['imagen_url'];
 
     protected $casts = [
-        'precio_pequena' => 'float',
-        'precio_mediana' => 'float',
-        'precio_grande' => 'float',
-        'precio_unico' => 'float',
-        'es_personalizable' => 'boolean',
+        'tipo_producto_id' => 'integer',
+        'personalizable' => 'boolean',
         'publicado' => 'boolean',
+        'orden' => 'integer',
     ];
 
-    // Relaciones -----------------------
 
-    /**
-     * Un artículo pertenece a una categoría.
-     */
-    public function tipoProducto()
+    public function tipoProducto(): BelongsTo
     {
         return $this->belongsTo(TipoProducto::class, 'tipo_producto_id');
     }
 
-    public function categoria()
+    public function precios(): HasMany
     {
-        return $this->belongsTo(Categoria::class);
+        return $this->hasMany(ArticuloPrecio::class, 'articulo_id');
     }
 
     public function ingredientes()
     {
-        return $this->belongsToMany(Ingrediente::class, 'producto_ingredientes', 'producto_id', 'ingrediente_id')
-            ->withTimestamps();
+        return $this->belongsToMany(
+            Ingrediente::class,
+            'articulo_ingredientes',
+            'articulo_id',
+            'ingrediente_id'
+        )->withPivot([
+            'modo',
+            'incluido_por_defecto',
+            'obligatorio',
+            'max_cantidad'
+        ]);
+    }
+
+
+    public function categorias(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            CategoriaArticulo::class,
+            'articulo_categoria',
+            'articulo_id',
+            'categoria_articulo_id'
+        )->withPivot('orden')->withTimestamps();
+    }
+    public function getImagenUrlAttribute()
+    {
+        return $this->imagen
+            ? asset('storage/' . $this->imagen)
+            : null;
     }
 }

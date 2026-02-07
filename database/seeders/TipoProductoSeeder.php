@@ -2,19 +2,22 @@
 
 namespace Database\Seeders;
 
-use App\Models\TipoProducto;
 use Illuminate\Database\Seeder;
+use App\Models\TipoProducto;
 
 class TipoProductoSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run(): void
     {
-        $tipos = ['Pizza', 'Pasta', 'Hamburguesa', 'Bocadillo', 'Rosca', 'Ensalada'];
-        foreach ($tipos as $tipo) {
-            TipoProducto::create(['nombre' => $tipo]);
-        }
+        TipoProducto::insert([
+            [
+                'nombre' => 'Pizza',
+                'usa_tamanos' => 1,
+            ],
+            [
+                'nombre' => 'Bebida',
+                'usa_tamanos' => 0,
+            ],
+        ]);
     }
 }

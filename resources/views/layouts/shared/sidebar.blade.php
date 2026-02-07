@@ -1,4 +1,4 @@
-<div class="app-menu">
+<div class="app-menu shrink-0 h-screen sticky top-0">
 
     <!-- Sidenav Brand Logo -->
     <a href="{{ route('any', 'index') }}" class="logo-box">
@@ -22,7 +22,8 @@
     </button>
 
     <!--- Menu -->
-    <div class="srcollbar" data-simplebar>
+    {{-- Cambio de clases aquí  --}}
+    <div class="scrollbar h-[calc(100vh-70px)]" data-simplebar>
         <ul class="menu" data-fc-type="accordion">
             <li class="menu-title">Menu</li>
 
@@ -32,7 +33,7 @@
                     <span class="menu-text"> Inicio </span>
                 </a>
             </li>
-         
+
             @if (Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                 <li class="menu-item">
                     <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">

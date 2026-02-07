@@ -18,19 +18,20 @@
     <script src="https://cdn.jsdelivr.net/npm/notyf/notyf.min.js"></script>
     {{-- Data Table --}}
     <link href="https://cdn.datatables.net/v/dt/dt-2.1.8/datatables.min.css" rel="stylesheet">
+
 </head>
 
 <body>
 
-    <div class="flex wrapper">
+    <div class="flex min-h-screen">
 
         @include('layouts.shared/sidebar')
 
-        <div class="page-content">
+        <div class="page-content flex flex-col flex-1 min-w-0">
 
             @include('layouts.shared/topbar')
 
-            <main class="flex-grow p-6">
+            <main class="flex-1 overflow-auto p-6">
 
                 @include('layouts.shared/page-title', [
                     'title' => $title,
@@ -51,11 +52,13 @@
 
     @include('layouts.shared/footer-scripts')
 
-    @vite(['resources/js/app.js'])
+    @vite(['resources/js/app.js', 'resources/js/react/main.jsx'])
 
     @vite(['resources/js/table-data.js'])
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.datatables.net/v/dt/dt-2.1.8/datatables.min.js"></script>
+
+
 
 
 </body>

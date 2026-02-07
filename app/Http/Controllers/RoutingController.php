@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\Request;
+use App\Models\User;
 
 class RoutingController extends Controller
 {
@@ -20,6 +20,7 @@ class RoutingController extends Controller
 
         return view('index', compact('totalUsers'));
     }
+
 
     public function logout(Request $request)
     {
