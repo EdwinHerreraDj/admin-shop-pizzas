@@ -100,33 +100,33 @@ export default function IngredientePreciosModal({
         <div className="fixed inset-0 z-50 bg-slate-900/80 backdrop-blur-sm flex items-center justify-center px-4">
             <div
                 className="
-        w-full max-w-4xl
-        rounded-3xl
-        bg-white
-        shadow-[0_40px_120px_rgba(0,0,0,0.45)]
-        overflow-hidden
-    "
+            w-full max-w-4xl
+            rounded-3xl
+            bg-white
+            shadow-[0_40px_120px_rgba(0,0,0,0.45)]
+            overflow-hidden
+        "
             >
                 {/* HEADER PREMIUM */}
                 <div
                     className="
-            relative
-            px-7 py-5
-            bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600
-            text-white
-        "
+                relative
+                px-7 py-5
+                bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600
+                text-white
+            "
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <div
                                 className="
-                        w-12 h-12
-                        rounded-2xl
-                        bg-white/20
-                        backdrop-blur
-                        flex items-center justify-center
-                        text-2xl
-                    "
+                            w-12 h-12
+                            rounded-2xl
+                            bg-white/20
+                            backdrop-blur
+                            flex items-center justify-center
+                            text-2xl
+                        "
                             >
                                 <i className="mgc_coin_line"></i>
                             </div>
@@ -157,56 +157,52 @@ export default function IngredientePreciosModal({
                     </div>
                 </div>
 
-                {/* PRECIO BASE DESTACADO */}
+                {/* ACCIONES SUPERIORES */}
                 <div
                     className="
-            px-7 py-5
-            bg-gradient-to-b from-indigo-50 to-white
-            border-b
-            flex items-end gap-4
-        "
+                px-7 py-5
+                border-b
+                bg-white
+                flex justify-end
+            "
                 >
-                    <div>
-                        <label className="text-xs font-semibold uppercase text-indigo-600 tracking-wide">
-                            Precio base global
-                        </label>
-
-                        <input
-                            type="number"
-                            step="0.01"
-                            value={precioBase}
-                            onChange={(e) => setPrecioBase(e.target.value)}
-                            placeholder="0.00"
+                    <div className="flex flex-wrap gap-3">
+                        <a
+                            href="/admin/tamanos"
                             className="
-                        mt-1
-                        h-11 w-44
-                        px-3
+                        inline-flex items-center gap-2
+                        h-11 px-5
                         rounded-xl
                         border border-indigo-200
                         bg-white
-                        text-base
-                        font-semibold
-                        focus:outline-none
-                        focus:ring-2
-                        focus:ring-indigo-500/40
+                        text-indigo-600
+                        text-sm font-semibold
+                        hover:bg-indigo-50
+                        transition
                     "
-                        />
-                    </div>
+                        >
+                            <i className="mgc_external_link_line"></i>
+                            Gestionar tamaños
+                        </a>
 
-                    <button
-                        onClick={aplicarBaseATodos}
-                        disabled={!tipoActivoId}
-                        className={`
-        h-11 px-5 rounded-xl font-semibold transition
-        ${
-            tipoActivoId
-                ? "bg-indigo-600 text-white hover:bg-indigo-700"
-                : "bg-gray-200 text-gray-400 cursor-not-allowed"
-        }
-    `}
-                    >
-                        Aplicar a todos
-                    </button>
+                        <a
+                            href="/admin/tipos-producto"
+                            className="
+                        inline-flex items-center gap-2
+                        h-11 px-5
+                        rounded-xl
+                        border border-violet-200
+                        bg-white
+                        text-violet-600
+                        text-sm font-semibold
+                        hover:bg-violet-50
+                        transition
+                    "
+                        >
+                            <i className="mgc_git_merge_line"></i>
+                            Gestionar tipos
+                        </a>
+                    </div>
                 </div>
 
                 {/* SELECTOR DE TIPOS */}
@@ -219,14 +215,14 @@ export default function IngredientePreciosModal({
                                 key={tipo.id}
                                 onClick={() => setTipoActivoId(tipo.id)}
                                 className={`
-                    px-4 py-2 rounded-xl text-sm font-semibold
-                    transition
-                    ${
-                        activo
-                            ? "bg-indigo-600 text-white shadow"
-                            : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                    }
-                `}
+                            px-4 py-2 rounded-xl text-sm font-semibold
+                            transition
+                            ${
+                                activo
+                                    ? "bg-indigo-600 text-white shadow"
+                                    : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                            }
+                        `}
                             >
                                 {tipo.nombre}
                             </button>
@@ -242,22 +238,22 @@ export default function IngredientePreciosModal({
                             <div
                                 key={tipo.id}
                                 className="
-                rounded-2xl
-                bg-white
-                p-6
-                shadow-sm
-                border border-slate-200
-            "
+                            rounded-2xl
+                            bg-white
+                            p-6
+                            shadow-sm
+                            border border-slate-200
+                        "
                             >
                                 <div className="flex items-center gap-2 mb-5">
                                     <div
                                         className="
-                        w-9 h-9
-                        rounded-lg
-                        bg-violet-100
-                        text-violet-600
-                        flex items-center justify-center
-                    "
+                                    w-9 h-9
+                                    rounded-lg
+                                    bg-violet-100
+                                    text-violet-600
+                                    flex items-center justify-center
+                                "
                                     >
                                         <i className="mgc_grass_fill"></i>
                                     </div>
@@ -267,7 +263,7 @@ export default function IngredientePreciosModal({
                                     </h3>
                                 </div>
 
-                                <div className="grid grid-cols-3 gap-5">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
                                     {tipo.tamanos.map((tam) => (
                                         <div key={tam.id}>
                                             <label className="text-xs font-semibold text-gray-500 uppercase">
@@ -288,18 +284,18 @@ export default function IngredientePreciosModal({
                                                     )
                                                 }
                                                 className="
-                                mt-1
-                                w-full h-10
-                                px-3
-                                rounded-lg
-                                border border-gray-300
-                                bg-white
-                                font-medium
-                                focus:outline-none
-                                focus:ring-2
-                                focus:ring-violet-500/40
-                                focus:border-violet-500
-                            "
+                                            mt-1
+                                            w-full h-10
+                                            px-3
+                                            rounded-lg
+                                            border border-gray-300
+                                            bg-white
+                                            font-medium
+                                            focus:outline-none
+                                            focus:ring-2
+                                            focus:ring-violet-500/40
+                                            focus:border-violet-500
+                                        "
                                             />
                                         </div>
                                     ))}
@@ -311,11 +307,11 @@ export default function IngredientePreciosModal({
                 {/* FOOTER */}
                 <div
                     className="
-            px-7 py-5
-            border-t
-            bg-white
-            flex justify-end gap-3
-        "
+                px-7 py-5
+                border-t
+                bg-white
+                flex justify-end gap-3
+            "
                 >
                     <button
                         onClick={onClose}

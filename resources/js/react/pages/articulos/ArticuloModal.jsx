@@ -54,8 +54,15 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
 
     // Validación de campos requeridos
     const isValid = useMemo(() => {
-        return nombre.trim() && tipoId && orden > 0 && !horarioError;
-    }, [nombre, tipoId, orden, horarioError]);
+        if (!nombre.trim()) return false;
+        if (orden <= 0) return false;
+        if (horarioError) return false;
+
+        // SOLO si es personalizable exigimos tipo
+        if (personalizable && !tipoId) return false;
+
+        return true;
+    }, [nombre, orden, horarioError, personalizable, tipoId]);
 
     const handleImageChange = useCallback(
         (e) => {
@@ -110,10 +117,12 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
 
             form.append("nombre", nombre.trim());
             form.append("descripcion", descripcion.trim());
-            form.append("tipo_producto_id", tipoId);
             form.append("personalizable", personalizable ? 1 : 0);
             form.append("publicado", publicado ? 1 : 0);
             form.append("orden", orden);
+            if (personalizable) {
+                form.append("tipo_producto_id", tipoId);
+            }
 
             if (imagen) {
                 form.append("imagen", imagen);
@@ -244,34 +253,95 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
                             <FieldError name="descripcion" />
                         </div>
 
-                        {/* Tipo */}
-                        <div>
-                            <label className="text-xs font-semibold uppercase text-gray-500">
-                                Tipo de producto{" "}
-                                <span className="text-red-500">*</span>
-                            </label>
+                        {/* Switches */}
+                        <div className="flex justify-between items-center border rounded-2xl p-4">
+                            <div>
+                                <span className="text-sm font-semibold">
+                                    Personalizable
+                                </span>
+                                <p className="text-xs text-gray-400">
+                                    Permite modificar ingredientes
+                                </p>
+                            </div>
 
-                            <select
-                                value={tipoId}
-                                onChange={(e) => setTipoId(e.target.value)}
-                                className={`mt-1 w-full h-11 px-3 rounded-xl border ${
-                                    errors.tipo_producto_id
-                                        ? "border-red-500"
-                                        : ""
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setPersonalizable(!personalizable)
+                                }
+                                className={`w-12 h-7 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                                    personalizable
+                                        ? "bg-indigo-500"
+                                        : "bg-gray-300"
                                 }`}
+                                role="switch"
+                                aria-checked={personalizable}
                             >
-                                <option value="">
-                                    Selecciona el tipo de producto
-                                </option>
-                                {tipos.map((t) => (
-                                    <option key={t.id} value={t.id}>
-                                        {t.nombre}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <FieldError name="tipo_producto_id" />
+                                <span
+                                    className={`block w-5 h-5 bg-white rounded-full m-1 transition-transform ${
+                                        personalizable ? "translate-x-5" : ""
+                                    }`}
+                                />
+                            </button>
                         </div>
+
+                        <div className="flex justify-between items-center border rounded-2xl p-4">
+                            <div>
+                                <span className="text-sm font-semibold">
+                                    Publicado
+                                </span>
+                                <p className="text-xs text-gray-400">
+                                    Visible para los clientes
+                                </p>
+                            </div>
+
+                            <button
+                                type="button"
+                                onClick={() => setPublicado(!publicado)}
+                                className={`w-12 h-7 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                                    publicado ? "bg-emerald-500" : "bg-gray-300"
+                                }`}
+                                role="switch"
+                                aria-checked={publicado}
+                            >
+                                <span
+                                    className={`block w-5 h-5 bg-white rounded-full m-1 transition-transform ${
+                                        publicado ? "translate-x-5" : ""
+                                    }`}
+                                />
+                            </button>
+                        </div>
+
+                        {/* Tipo */}
+                        {personalizable && (
+                            <div>
+                                <label className="text-xs font-semibold uppercase text-gray-500">
+                                    Tipo de producto{" "}
+                                    <span className="text-red-500">*</span>
+                                </label>
+
+                                <select
+                                    value={tipoId}
+                                    onChange={(e) => setTipoId(e.target.value)}
+                                    className={`mt-1 w-full h-11 px-3 rounded-xl border ${
+                                        errors.tipo_producto_id
+                                            ? "border-red-500"
+                                            : ""
+                                    }`}
+                                >
+                                    <option value="">
+                                        Selecciona el tipo de producto
+                                    </option>
+                                    {tipos.map((t) => (
+                                        <option key={t.id} value={t.id}>
+                                            {t.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <FieldError name="tipo_producto_id" />
+                            </div>
+                        )}
 
                         {/* Orden */}
                         <div>
@@ -377,65 +447,6 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
                             </label>
 
                             <FieldError name="imagen" />
-                        </div>
-
-                        {/* Switches */}
-                        <div className="flex justify-between items-center border rounded-2xl p-4">
-                            <div>
-                                <span className="text-sm font-semibold">
-                                    Personalizable
-                                </span>
-                                <p className="text-xs text-gray-400">
-                                    Permite modificar ingredientes
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() =>
-                                    setPersonalizable(!personalizable)
-                                }
-                                className={`w-12 h-7 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-                                    personalizable
-                                        ? "bg-indigo-500"
-                                        : "bg-gray-300"
-                                }`}
-                                role="switch"
-                                aria-checked={personalizable}
-                            >
-                                <span
-                                    className={`block w-5 h-5 bg-white rounded-full m-1 transition-transform ${
-                                        personalizable ? "translate-x-5" : ""
-                                    }`}
-                                />
-                            </button>
-                        </div>
-
-                        <div className="flex justify-between items-center border rounded-2xl p-4">
-                            <div>
-                                <span className="text-sm font-semibold">
-                                    Publicado
-                                </span>
-                                <p className="text-xs text-gray-400">
-                                    Visible para los clientes
-                                </p>
-                            </div>
-
-                            <button
-                                type="button"
-                                onClick={() => setPublicado(!publicado)}
-                                className={`w-12 h-7 rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
-                                    publicado ? "bg-emerald-500" : "bg-gray-300"
-                                }`}
-                                role="switch"
-                                aria-checked={publicado}
-                            >
-                                <span
-                                    className={`block w-5 h-5 bg-white rounded-full m-1 transition-transform ${
-                                        publicado ? "translate-x-5" : ""
-                                    }`}
-                                />
-                            </button>
                         </div>
 
                         {/* Horario de venta */}

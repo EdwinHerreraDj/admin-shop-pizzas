@@ -32,7 +32,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('/', [RoutingController::class, 'home'])->name('root');
     Route::get('/home', [RoutingController::class, 'home'])->name('home');
-    Route::get('/logout', [RoutingController::class, 'logout'])->name('logout_action');
+    Route::post('/logout', [RoutingController::class, 'logout'])->name('logout_action');
 
 
     /*

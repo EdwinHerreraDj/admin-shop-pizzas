@@ -6,12 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Articulo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class ArticuloController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Articulo::query()
+        $perPage = $request->integer('per_page', 10);
+
+        $query = Articulo::query()
             ->with([
                 'tipoProducto:id,nombre',
                 'categorias:id,nombre'
@@ -20,18 +23,39 @@ class ArticuloController extends Controller
                 'ingredientes as ingredientes_base_count' => function ($q) {
                     $q->where('articulo_ingredientes.modo', 'base');
                 }
-            ])
+            ]);
+
+        // Filtro por nombre
+        if ($request->filled('search')) {
+            $query->where('nombre', 'like', '%' . $request->search . '%');
+        }
+
+        // Filtro por categoría
+        if ($request->filled('categoria_id')) {
+            $query->whereHas('categorias', function ($q) use ($request) {
+                $q->where('categorias_articulos.id', $request->categoria_id);
+            });
+        }
+
+        return $query
             ->orderBy('orden')
-            ->get();
+            ->paginate($perPage);
     }
+
 
     public function store(Request $request)
     {
         $data = $request->validate([
             'nombre' => ['required', 'string', 'max:150'],
             'descripcion' => ['nullable', 'string', 'max:2000'],
-            'tipo_producto_id' => ['nullable', 'exists:tipos_producto,id'],
+
             'personalizable' => ['nullable', 'boolean'],
+            'tipo_producto_id' => [
+                Rule::requiredIf(fn() => $request->boolean('personalizable')),
+                'nullable',
+                'exists:tipos_producto,id',
+            ],
+
             'publicado' => ['nullable', 'boolean'],
             'orden' => ['nullable', 'integer', 'min:1'],
             'hora_inicio_venta' => ['nullable', 'date_format:H:i'],
@@ -43,11 +67,17 @@ class ArticuloController extends Controller
         $data['personalizable'] = $data['personalizable'] ?? false;
         $data['publicado'] = $data['publicado'] ?? false;
 
-        if (!isset($data['orden'])) {
-            $maxOrden = Articulo::max('orden');
-            $data['orden'] = $maxOrden ? $maxOrden + 1 : 1;
+        // Blindaje: si NO es personalizable, el tipo no puede existir
+        if (!$data['personalizable']) {
+            $data['tipo_producto_id'] = null;
         }
 
+        // Orden automático
+        if (!isset($data['orden'])) {
+            $data['orden'] = (Articulo::max('orden') ?? 0) + 1;
+        }
+
+        // Imagen
         if ($request->hasFile('imagen')) {
             $data['imagen'] = $request->file('imagen')->store('articulos', 'public');
         }

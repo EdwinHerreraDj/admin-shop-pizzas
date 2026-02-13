@@ -24,10 +24,11 @@
     </a>
 
     <!-- Topbar Search Modal Button -->
-    <button type="button" data-fc-type="modal" data-fc-target="topbar-search-modal" class="nav-link p-2 me-auto" disabled>
+    <button type="button" data-fc-type="modal" data-fc-target="topbar-search-modal" class="nav-link p-2 me-auto"
+        disabled>
     </button>
 
- 
+
 
     <!-- Fullscreen Toggle Button -->
     <div class="md:flex hidden">
@@ -47,7 +48,8 @@
                 <i class="mgc_notification_line text-2xl"></i>
             </span>
         </button>
-        <div class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-80 z-50 mt-2 transition-[margin,opacity] duration-300 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg">
+        <div
+            class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-80 z-50 mt-2 transition-[margin,opacity] duration-300 bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 rounded-lg">
 
             <div class="p-2 border-b border-dashed border-gray-200 dark:border-gray-700">
                 <div class="flex items-center justify-between">
@@ -62,7 +64,7 @@
 
                 <h5 class="text-xs text-gray-500 mb-2">Today</h5>
                 <p>No hay notificaciones pendientes</p>
-               {{--  <a href="javascript:void(0);" class="block mb-4">
+                {{--  <a href="javascript:void(0);" class="block mb-4">
                     <div class="card-body">
                         <div class="flex items-center">
                             <div class="flex-shrink-0">
@@ -141,29 +143,37 @@
                 </a> --}}
             </div>
 
-            <a href="javascript:void(0);" class="p-2 border-t border-dashed border-gray-200 dark:border-gray-700 block text-center text-primary underline font-semibold">
+            <a href="javascript:void(0);"
+                class="p-2 border-t border-dashed border-gray-200 dark:border-gray-700 block text-center text-primary underline font-semibold">
                 View All
             </a>
         </div>
     </div>
 
- 
+
     <!-- Profile Dropdown Button -->
     <div class="relative">
         <button data-fc-type="dropdown" data-fc-placement="bottom-end" type="button" class="nav-link">
             <img src="/images/users/user-12.jpg" alt="user-image" class="rounded-full h-10">
         </button>
-        <div class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-44 z-50 transition-[margin,opacity] duration-300 mt-2 bg-white shadow-lg border rounded-lg p-2 border-gray-200 dark:border-gray-700 dark:bg-gray-800">
-          
-            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="{{ route('second', ['auth', 'login']) }}">
+        <div
+            class="fc-dropdown fc-dropdown-open:opacity-100 hidden opacity-0 w-44 z-50 transition-[margin,opacity] duration-300 mt-2 bg-white shadow-lg border rounded-lg p-2 border-gray-200 dark:border-gray-700 dark:bg-gray-800">
+
+            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300"
+                href="{{ route('second', ['auth', 'login']) }}">
                 <i class="mgc_lock_line  me-2"></i>
                 <span>Lock Screen</span>
             </a>
             <hr class="my-2 -mx-2 border-gray-200 dark:border-gray-700">
-            <a class="flex items-center py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300" href="{{ route('logout_action') }}">
-                <i class="mgc_exit_line  me-2"></i>
-                <span>Log Out</span>
-            </a>
+            <form method="POST" action="{{ route('logout_action') }}">
+                @csrf
+                <button type="submit"
+                    class="flex items-center w-full py-2 px-3 rounded-md text-sm text-gray-800 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-gray-300">
+                    <i class="mgc_exit_line me-2"></i>
+                    <span>Log Out</span>
+                </button>
+            </form>
+
         </div>
     </div>
 </header>
@@ -172,13 +182,18 @@
 <!-- Topbar Search Modal -->
 <div>
     <div id="topbar-search-modal" class="fc-modal hidden w-full h-full fixed top-0 start-0 z-50">
-        <div class="fc-modal-open:opacity-100 fc-modal-open:duration-500 opacity-0 transition-all sm:max-w-lg sm:w-full m-12 sm:mx-auto">
-            <div class="mx-auto max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl transition-all dark:bg-slate-800">
+        <div
+            class="fc-modal-open:opacity-100 fc-modal-open:duration-500 opacity-0 transition-all sm:max-w-lg sm:w-full m-12 sm:mx-auto">
+            <div
+                class="mx-auto max-w-2xl overflow-hidden rounded-xl bg-white shadow-2xl transition-all dark:bg-slate-800">
                 <div class="relative">
-                    <div class="pointer-events-none absolute top-3.5 start-4 text-gray-900 text-opacity-40 dark:text-gray-200">
+                    <div
+                        class="pointer-events-none absolute top-3.5 start-4 text-gray-900 text-opacity-40 dark:text-gray-200">
                         <i class="mgc_search_line text-xl"></i>
                     </div>
-                    <input type="search" class="h-12 w-full border-0 bg-transparent ps-11 pe-4 text-gray-900 placeholder-gray-500 dark:placeholder-gray-300 dark:text-gray-200 focus:ring-0 sm:text-sm" placeholder="Search...">
+                    <input type="search"
+                        class="h-12 w-full border-0 bg-transparent ps-11 pe-4 text-gray-900 placeholder-gray-500 dark:placeholder-gray-300 dark:text-gray-200 focus:ring-0 sm:text-sm"
+                        placeholder="Search...">
                 </div>
             </div>
         </div>
