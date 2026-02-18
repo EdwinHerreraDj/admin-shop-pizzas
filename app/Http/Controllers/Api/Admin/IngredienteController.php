@@ -9,16 +9,32 @@ use Illuminate\Http\Request;
 
 class IngredienteController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        return Ingrediente::with([
+        $query = Ingrediente::with([
             'categoria',
             'precios.tipoProducto',
             'precios.tamano',
-        ])
-            ->orderBy('id')
-            ->get();
+        ]);
+
+        
+        if ($request->search) {
+            $search = $request->search;
+
+            $query->where(function ($q) use ($search) {
+                $q->where('nombre', 'like', "%{$search}%")
+                    ->orWhereHas('categoria', function ($q2) use ($search) {
+                        $q2->where('nombre', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        return response()->json(
+            $query->orderBy('id')
+                ->paginate(15) 
+        );
     }
+
 
 
     public function store(Request $request)

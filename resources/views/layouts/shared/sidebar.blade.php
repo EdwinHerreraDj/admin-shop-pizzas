@@ -34,7 +34,82 @@
                 </a>
             </li>
 
+            <li class="menu-item">
+                <a href="javascript:void(0)" class="menu-link">
+                    <span class="menu-icon"><i class="mgc_certificate_line"></i></span>
+                    <span class="menu-text"> Pedidos </span>
+                </a>
+            </li>
+
             @if (Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+
+                <li class="menu-item">
+                    <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_bread_line"></i></span>
+                        <span class="menu-text"> Productos </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+
+                    <ul class="sub-menu hidden">
+                        <li class="menu-item">
+                            <a href="{{ route('admin.articulos.index') }}" class="menu-link">
+                                <span class="menu-text">Articulos</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('admin.categorias-articulos.index') }}" class="menu-link">
+                                <span class="menu-text">Categorías</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('admin.categorias-articulos.orden') }}" class="menu-link">
+                                <span class="menu-text">Ordenar articulos</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="menu-item">
+                    <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_carrot_line"></i></span>
+                        <span class="menu-text"> Ingredientes </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+
+                    <ul class="sub-menu hidden">
+                        <li class="menu-item">
+                            <a href="{{ route('admin.ingredientes.index') }}" class="menu-link">
+                                <span class="menu-text"> Agregar Ingredientes</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('admin.tipos-producto.index') }}" class="menu-link">
+                                <span class="menu-text">Tipos de productos</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('admin.categorias-ingredientes.index') }}" class="menu-link">
+                                <span class="menu-text">Categorías ingredientes</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                
+
+                <li class="menu-item">
+                    <a href="{{ route('admin.tamanos.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_ruler_line"></i></span>
+                        <span class="menu-text"> Tamaños </span>
+                    </a>
+                </li>
+                
+                <li class="menu-item">
+                    <a href="{{ route('admin.zonas-envio.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_riding_line"></i></span>
+                        <span class="menu-text"> Zonas de envios </span>
+                    </a>
+                </li>
+
                 <li class="menu-item">
                     <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
                         <span class="menu-icon"><i class="mgc_user_3_line"></i></span>
@@ -57,6 +132,10 @@
 
                     </ul>
                 </li>
+
+
+
+
             @endif
 
 

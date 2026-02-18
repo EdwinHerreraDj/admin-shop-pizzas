@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\Admin\ArticuloPrecioController;
 use App\Http\Controllers\Api\Admin\ArticuloIngredienteController;
 use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
+use App\Http\Controllers\Api\Admin\ZonaEnvioController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -26,7 +27,7 @@ Route::prefix('admin')->group(function () {
     Route::apiResource('ingredientes', IngredienteController::class);
     Route::apiResource('ingrediente-precios', IngredientePrecioController::class);
     Route::apiResource('articulos', ArticuloController::class);
-    Route::apiResource('articulo-precios', ArticuloPrecioController::class);
+
 
 
     /* Articulo Ingredientes */
@@ -75,6 +76,16 @@ Route::prefix('admin')->group(function () {
     Route::delete('categorias-articulos/{categoriaArticulo}', [CategoriaArticuloController::class, 'destroy']);
 
 
+    /* Precios de los articulos */
+    Route::get(
+        'articulos/{articulo}/precios',
+        [ArticuloPrecioController::class, 'index']
+    );
+
+    Route::put(
+        'articulos/{articulo}/precios',
+        [ArticuloPrecioController::class, 'update']
+    );
 
 
     Route::get(
@@ -98,4 +109,10 @@ Route::prefix('admin')->group(function () {
         'categorias-articulos/{categoria}/orden',
         [CategoriaArticuloController::class, 'guardarOrden']
     );
+
+    /* Zona de envio */
+    Route::get('zonas-envio', [ZonaEnvioController::class, 'index']);
+    Route::post('zonas-envio', [ZonaEnvioController::class, 'store']);
+    Route::put('zonas-envio/{zona}', [ZonaEnvioController::class, 'update']);
+    Route::delete('zonas-envio/{zona}', [ZonaEnvioController::class, 'destroy']);
 });

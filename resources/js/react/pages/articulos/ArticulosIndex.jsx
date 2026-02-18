@@ -4,6 +4,8 @@ import toast from "react-hot-toast";
 import ConfirmDeleteModal from "../../components/ConfirmDeleteModal";
 import ArticuloModal from "./ArticuloModal";
 import ArticuloCategoriasModal from "./ArticuloCategoriasModal";
+import ArticuloPreciosModal from "./ArticuloPreciosModal";
+import RowActionsDropdown from "./RowActionsDropdown";
 
 export default function ArticulosIndex() {
     const [items, setItems] = useState([]);
@@ -29,6 +31,9 @@ export default function ArticulosIndex() {
     const [deleting, setDeleting] = useState(false);
 
     const [categoriasArticulo, setCategoriasArticulo] = useState(null);
+
+    // Estados para los precios de los articulos
+    const [preciosArticulo, setPreciosArticulo] = useState(null);
 
     /* =========================
    CARGA DE ARTÍCULOS (REACTIVA)
@@ -205,49 +210,6 @@ export default function ArticulosIndex() {
                 </div>
             </div>
 
-            {/* FILTROS */}
-            <div className="mb-5 flex justify-end gap-4">
-                <input
-                    type="text"
-                    placeholder="Buscar por nombre…"
-                    value={search}
-                    onChange={(e) => {
-                        setSearch(e.target.value);
-                        setPage(1);
-                    }}
-                    className="
-                h-11 w-64
-                px-4
-                rounded-xl
-                border border-gray-300
-                text-sm
-                focus:ring-2 focus:ring-indigo-500
-            "
-                />
-
-                <select
-                    value={categoriaId}
-                    onChange={(e) => {
-                        setCategoriaId(e.target.value);
-                        setPage(1);
-                    }}
-                    className="
-                h-11 w-56
-                px-3
-                rounded-xl
-                border border-gray-300
-                text-sm
-                focus:ring-2 focus:ring-indigo-500
-            "
-                >
-                    <option value="">Todas las categorías</option>
-                    {categorias.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                            {cat.nombre}
-                        </option>
-                    ))}
-                </select>
-            </div>
 
             {/* TABLE CARD */}
             <div
@@ -259,32 +221,107 @@ export default function ArticulosIndex() {
             overflow-hidden
         "
             >
-                <div className="w-full overflow-x-auto">
-                    <table className="w-full min-w-[1200px] text-sm">
+                {/* TOP BAR TABLA */}
+                <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 px-6 py-4 border-b border-slate-200 bg-slate-50/70">
+                    <div>
+                        <h2 className="text-sm font-semibold text-slate-700">
+                            Listado de artículos
+                        </h2>
+                        <p className="text-xs text-slate-500">
+                            Filtra por nombre o categoría
+                        </p>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto">
+                        {/* BUSCADOR */}
+                        <div className="relative w-full sm:w-64">
+                            <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                                <i className="mgc_search_2_line text-lg"></i>
+                            </div>
+
+                            <input
+                                type="text"
+                                placeholder="Buscar por nombre…"
+                                value={search}
+                                onChange={(e) => {
+                                    setSearch(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="
+                        w-full h-10
+                        pl-10 pr-4
+                        rounded-xl
+                        border border-slate-200
+                        bg-white
+                        text-sm
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-violet-500/40
+                        focus:border-violet-500
+                        transition
+                    "
+                            />
+                        </div>
+
+                        {/* SELECT CATEGORÍA */}
+                        <div className="relative w-full sm:w-56">
+                            <select
+                                value={categoriaId}
+                                onChange={(e) => {
+                                    setCategoriaId(e.target.value);
+                                    setPage(1);
+                                }}
+                                className="
+                        w-full h-10
+                        px-3
+                        rounded-xl
+                        border border-slate-200
+                        bg-white
+                        text-sm
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-violet-500/40
+                        focus:border-violet-500
+                        transition
+                    "
+                            >
+                                <option value="">Todas las categorías</option>
+                                {categorias.map((cat) => (
+                                    <option key={cat.id} value={cat.id}>
+                                        {cat.nombre}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div className="w-full overflow-x-auto border border-slate-200 bg-white shadow-sm">
+                    <table className="w-full min-w-[1200px] text-sm text-slate-700">
                         {/* HEADER */}
-                        <thead className="bg-slate-50/70 backdrop-blur-sm border-b border-gray-200">
-                            <tr className="text-left text-xs font-semibold tracking-wider text-gray-600 uppercase">
-                                <th className="px-7 py-4">Imagen</th>
-                                <th className="px-7 py-4">Nombre</th>
-                                <th className="px-7 py-4">Descripción</th>
-                                <th className="px-7 py-4">Tipo</th>
-                                <th className="px-7 py-4">Personalizable</th>
-                                <th className="px-7 py-4">Publicado</th>
-                                <th className="px-7 py-4">Categorías</th>
-                                <th className="px-7 py-4">Orden</th>
-                                <th className="px-7 py-4 w-[240px] text-right">
+                        <thead className="bg-slate-50 border-b border-slate-200">
+                            <tr className="text-left text-[11px] font-semibold tracking-wider text-slate-500 uppercase">
+                                <th className="px-6 py-4">Imagen</th>
+                                <th className="px-6 py-4">Nombre</th>
+                                <th className="px-6 py-4">Descripción</th>
+                                <th className="px-6 py-4">Tipo</th>
+                                <th className="px-6 py-4">Precios</th>
+                                <th className="px-6 py-4">Personalizable</th>
+                                <th className="px-6 py-4">Publicado</th>
+                                <th className="px-6 py-4">Categorías</th>
+                                <th className="px-6 py-4">Orden</th>
+                                <th className="px-6 py-4 w-[260px] text-right">
                                     Acciones
                                 </th>
                             </tr>
                         </thead>
 
                         {/* BODY */}
-                        <tbody className="divide-y divide-gray-100">
+                        <tbody className="divide-y divide-slate-100">
                             {loading ? (
                                 <tr>
                                     <td
                                         colSpan="9"
-                                        className="px-7 py-14 text-center text-gray-400"
+                                        className="px-6 py-16 text-center text-slate-400 text-sm"
                                     >
                                         Cargando…
                                     </td>
@@ -293,7 +330,7 @@ export default function ArticulosIndex() {
                                 <tr>
                                     <td
                                         colSpan="9"
-                                        className="px-7 py-14 text-center text-gray-400"
+                                        className="px-6 py-16 text-center text-slate-400 text-sm"
                                     >
                                         Sin datos
                                     </td>
@@ -302,70 +339,82 @@ export default function ArticulosIndex() {
                                 items.map((row) => (
                                     <tr
                                         key={row.id}
-                                        className="
-                    group
-                    hover:bg-violet-50/60
-                    transition
-                "
+                                        className="group hover:bg-violet-50/50 transition-colors duration-200"
                                     >
                                         {/* IMAGEN */}
-                                        <td className="px-7 py-5">
+                                        <td className="px-6 py-5">
                                             {row.imagen_url ? (
                                                 <img
                                                     src={row.imagen_url}
                                                     alt={row.nombre}
-                                                    className="
-                                w-12 h-12
-                                rounded-xl
-                                object-cover
-                                border
-                            "
+                                                    className="w-12 h-12 rounded-xl object-cover border border-slate-200 shadow-sm"
                                                 />
                                             ) : (
-                                                <div
-                                                    className="
-                                w-12 h-12
-                                rounded-xl
-                                bg-slate-100
-                                flex items-center justify-center
-                                text-slate-400
-                            "
-                                                >
-                                                    <i className="mgc_xls_line text-xl"></i>
+                                                <div className="w-12 h-12 rounded-xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
+                                                    <i className="mgc_xls_line text-lg"></i>
                                                 </div>
                                             )}
                                         </td>
 
                                         {/* NOMBRE */}
-                                        <td className="px-7 py-5 font-semibold text-gray-900">
-                                            {row.nombre}
+                                        <td className="px-6 py-5">
+                                            <div className="font-semibold text-slate-900">
+                                                {row.nombre}
+                                            </div>
                                         </td>
 
                                         {/* DESCRIPCIÓN */}
-                                        <td className="px-7 py-5 text-gray-600 max-w-[300px] truncate whitespace-nowrap">
-                                            {row.descripcion ?? "No aplica"}
+                                        <td className="px-6 py-5 max-w-[320px]">
+                                            <p className="text-slate-600 truncate whitespace-nowrap">
+                                                {row.descripcion ?? "No aplica"}
+                                            </p>
                                         </td>
 
                                         {/* TIPO */}
-                                        <td className="px-7 py-5 text-gray-600">
+                                        <td className="px-6 py-5 text-slate-600 font-medium">
                                             {row.tipo_producto?.nombre ??
                                                 "No aplica"}
                                         </td>
 
+                                        {/* PRECIOS */}
+                                        <td className="px-6 py-5">
+                                            {row.precios?.length > 0 ? (
+                                                <div className="flex flex-col gap-2">
+                                                    {row.precios.map((p) => (
+                                                        <div
+                                                            key={p.tamano_id}
+                                                            className="inline-flex items-center justify-between gap-4 bg-emerald-50 text-emerald-700 text-xs font-semibold px-3 py-1.5 rounded-lg border border-emerald-100 w-fit"
+                                                        >
+                                                            <span>
+                                                                {
+                                                                    p.tamano
+                                                                        ?.nombre
+                                                                }
+                                                            </span>
+                                                            <span>
+                                                                {parseFloat(
+                                                                    p.precio,
+                                                                ).toFixed(2)}
+                                                                €
+                                                            </span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ) : (
+                                                <span className="text-xs text-slate-400 italic">
+                                                    Sin precios
+                                                </span>
+                                            )}
+                                        </td>
+
                                         {/* PERSONALIZABLE */}
-                                        <td className="px-7 py-5">
+                                        <td className="px-6 py-5">
                                             <span
-                                                className={`
-                            inline-flex items-center
-                            px-3 py-1
-                            rounded-full
-                            text-xs font-semibold
-                            ${
-                                row.personalizable
-                                    ? "bg-indigo-100 text-indigo-700"
-                                    : "bg-slate-100 text-slate-600"
-                            }
-                        `}
+                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                                                    row.personalizable
+                                                        ? "bg-indigo-50 text-indigo-700 border-indigo-100"
+                                                        : "bg-slate-100 text-slate-600 border-slate-200"
+                                                }`}
                                             >
                                                 {row.personalizable
                                                     ? "Sí"
@@ -374,19 +423,13 @@ export default function ArticulosIndex() {
                                         </td>
 
                                         {/* PUBLICADO */}
-                                        <td className="px-7 py-5">
+                                        <td className="px-6 py-5">
                                             <span
-                                                className={`
-                            inline-flex items-center
-                            px-3 py-1
-                            rounded-full
-                            text-xs font-semibold
-                            ${
-                                row.publicado
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-rose-100 text-rose-600"
-                            }
-                        `}
+                                                className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${
+                                                    row.publicado
+                                                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
+                                                        : "bg-rose-50 text-rose-600 border-rose-100"
+                                                }`}
                                             >
                                                 {row.publicado
                                                     ? "Publicado"
@@ -395,8 +438,8 @@ export default function ArticulosIndex() {
                                         </td>
 
                                         {/* CATEGORÍAS */}
-                                        <td className="px-7 py-5">
-                                            <div className="flex flex-wrap gap-1 max-w-[220px]">
+                                        <td className="px-6 py-5">
+                                            <div className="flex flex-wrap gap-2 max-w-[240px]">
                                                 {row.categorias?.length > 0 ? (
                                                     <>
                                                         {row.categorias
@@ -404,15 +447,7 @@ export default function ArticulosIndex() {
                                                             .map((cat) => (
                                                                 <span
                                                                     key={cat.id}
-                                                                    className="
-                                            inline-flex items-center
-                                            px-2 py-0.5
-                                            rounded-lg
-                                            bg-slate-100
-                                            text-slate-700
-                                            text-[11px]
-                                            font-semibold
-                                        "
+                                                                    className="inline-flex items-center px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 text-[11px] font-semibold border border-slate-200"
                                                                 >
                                                                     {cat.nombre}
                                                                 </span>
@@ -420,7 +455,7 @@ export default function ArticulosIndex() {
 
                                                         {row.categorias.length >
                                                             2 && (
-                                                            <span className="text-xs text-gray-400">
+                                                            <span className="text-xs text-slate-400 font-medium">
                                                                 +
                                                                 {row.categorias
                                                                     .length - 2}
@@ -428,7 +463,7 @@ export default function ArticulosIndex() {
                                                         )}
                                                     </>
                                                 ) : (
-                                                    <span className="text-xs text-gray-400 italic">
+                                                    <span className="text-xs text-slate-400 italic">
                                                         Sin categoría
                                                     </span>
                                                 )}
@@ -436,77 +471,45 @@ export default function ArticulosIndex() {
                                         </td>
 
                                         {/* ORDEN */}
-                                        <td className="px-7 py-5 text-gray-500 font-medium">
+                                        <td className="px-6 py-5 text-slate-500 font-semibold">
                                             {row.orden}
                                         </td>
 
                                         {/* ACCIONES */}
-                                        <td className="px-7 py-5">
-                                            <div className="flex justify-end gap-2 opacity-80 group-hover:opacity-100 transition">
-                                                <button
-                                                    onClick={() =>
-                                                        setCategoriasArticulo(
-                                                            row,
-                                                        )
-                                                    }
-                                                    className="
-                                inline-flex items-center gap-2
-                                h-8 px-3
-                                rounded-lg
-                                bg-indigo-100
-                                text-indigo-700
-                                text-xs font-semibold
-                                hover:bg-indigo-200
-                            "
-                                                >
-                                                    <i className="mgc_folder_line"></i>
-                                                    Categorías
-                                                </button>
-
-                                                {row.personalizable && (
-                                                    <a
-                                                        href={`/admin/articulos/${row.id}/ingredientes`}
-                                                        className="
-                                    inline-flex items-center gap-2
-                                    h-8 px-3
-                                    rounded-lg
-                                    border border-gray-200
-                                    text-xs font-semibold
-                                    hover:bg-gray-50
-                                "
-                                                    >
-                                                        <i className="mgc_grass_line"></i>
-                                                        Ingredientes
-                                                    </a>
-                                                )}
-
+                                        <td className="px-6 py-5">
+                                            <div className="flex justify-end items-center gap-2">
+                                                {/* Editar visible */}
                                                 <button
                                                     onClick={() => onEdit(row)}
                                                     className="
-                                w-8 h-8
-                                flex items-center justify-center
-                                rounded-lg
-                                text-gray-500
-                                hover:bg-gray-100
-                            "
+                h-9 px-4
+                rounded-xl
+                bg-indigo-600
+                text-white
+                text-xs font-semibold
+                hover:bg-indigo-700
+                transition
+            "
                                                 >
-                                                    <i className="mgc_edit_2_line"></i>
+                                                    Editar
                                                 </button>
 
-                                                <button
-                                                    onClick={() =>
-                                                        onDelete(row)
+                                                {/* Dropdown */}
+                                                <RowActionsDropdown
+                                                    row={row}
+                                                    onCategorias={(r) =>
+                                                        setCategoriasArticulo(r)
                                                     }
-                                                    className="
-                                w-8 h-8
-                                flex items-center justify-center
-                                rounded-lg
-                                text-rose-500
-                                hover:bg-rose-50
-                            "
-                                                >
-                                                    <i className="mgc_delete_2_line"></i>
-                                                </button>
+                                                    onIngredientes={(r) =>
+                                                        (window.location.href = `/admin/articulos/${r.id}/ingredientes`)
+                                                    }
+                                                    onPrecios={(r) =>
+                                                        setPreciosArticulo(r)
+                                                    }
+                                                    onDelete={(r) =>
+                                                        onDelete(r)
+                                                    }
+                                                />
                                             </div>
                                         </td>
                                     </tr>
@@ -570,6 +573,17 @@ export default function ArticulosIndex() {
                     articulo={categoriasArticulo}
                     onClose={() => setCategoriasArticulo(null)}
                     onSaved={loadArticulos}
+                />
+            )}
+
+            {preciosArticulo && (
+                <ArticuloPreciosModal
+                    articulo={preciosArticulo}
+                    onClose={() => setPreciosArticulo(null)}
+                    onSaved={() => {
+                        setPreciosArticulo(null);
+                        loadArticulos();
+                    }}
                 />
             )}
         </div>

@@ -17,7 +17,8 @@ class ArticuloController extends Controller
         $query = Articulo::query()
             ->with([
                 'tipoProducto:id,nombre',
-                'categorias:id,nombre'
+                'categorias:id,nombre',
+                'precios.tamano:id,nombre' // Cargamos precios con su tamaño
             ])
             ->withCount([
                 'ingredientes as ingredientes_base_count' => function ($q) {
@@ -41,6 +42,7 @@ class ArticuloController extends Controller
             ->orderBy('orden')
             ->paginate($perPage);
     }
+
 
 
     public function store(Request $request)
@@ -136,15 +138,6 @@ class ArticuloController extends Controller
 
     public function destroy(Articulo $articulo)
     {
-        if (
-            $articulo->precios()->exists() ||
-            $articulo->ingredientes()->exists()
-        ) {
-            return response()->json([
-                'message' => 'No se puede eliminar: el artículo tiene precios o ingredientes asignados.'
-            ], 422);
-        }
-
         if ($articulo->imagen) {
             Storage::disk('public')->delete($articulo->imagen);
         }

@@ -3,60 +3,82 @@
 namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\ArticuloPrecio;
+use App\Models\Articulo;
+use App\Models\Tamano;
 use Illuminate\Http\Request;
 
 class ArticuloPrecioController extends Controller
 {
-    public function index()
+    /**
+     * Obtener tamaños permitidos y precios actuales del artículo
+     */
+    public function index(Articulo $articulo)
     {
-        return ArticuloPrecio::with([
-            'articulo:id,nombre',
-            'tamano:id,nombre',
-        ])->orderBy('id')->get();
-    }
-
-    public function store(Request $request)
-    {
-        $data = $request->validate([
-            'articulo_id' => ['required', 'exists:articulos,id'],
-            'tamano_id'   => ['required', 'exists:tamanos,id'],
-            'precio'      => ['required', 'numeric', 'min:0'],
-        ]);
-
-        $exists = ArticuloPrecio::where([
-            'articulo_id' => $data['articulo_id'],
-            'tamano_id'   => $data['tamano_id'],
-        ])->exists();
-
-        if ($exists) {
-            return response()->json([
-                'message' => 'Ya existe un precio para este tamaño.'
-            ], 422);
+        // Filtrar tamaños según tipo de artículo
+        if ($articulo->personalizable) {
+            $tamanos = Tamano::where('nombre', '!=', 'Único')
+                ->orderBy('orden')
+                ->get();
+        } else {
+            $tamanos = Tamano::where('nombre', 'Único')
+                ->orderBy('orden')
+                ->get();
         }
 
-        return ArticuloPrecio::create($data);
+        $precios = $articulo->precios()
+            ->select('tamano_id', 'precio')
+            ->get();
+            
+
+        return response()->json([
+            'tamanos' => $tamanos,
+            'precios' => $precios,
+        ]);
     }
 
-    public function show(ArticuloPrecio $articulo_precio)
-    {
-        return $articulo_precio->load(['articulo', 'tamano']);
-    }
-
-    public function update(Request $request, ArticuloPrecio $articulo_precio)
+    /**
+     * Reemplazar todos los precios del artículo
+     */
+    public function update(Request $request, Articulo $articulo)
     {
         $data = $request->validate([
-            'precio' => ['required', 'numeric', 'min:0'],
+            'precios' => ['required', 'array'],
+            'precios.*.tamano_id' => ['required', 'exists:tamanos,id'],
+            'precios.*.precio' => ['required', 'numeric', 'min:0'],
         ]);
 
-        $articulo_precio->update($data);
+        // Obtener tamaños permitidos según tipo de artículo
+        if ($articulo->personalizable) {
+            $tamanosPermitidos = Tamano::where('nombre', '!=', 'Único')
+                ->pluck('id')
+                ->toArray();
+        } else {
+            $tamanosPermitidos = Tamano::where('nombre', 'Único')
+                ->pluck('id')
+                ->toArray();
+        }
 
-        return $articulo_precio->load(['articulo', 'tamano']);
-    }
+        // Validar que solo se envíen tamaños permitidos
+        foreach ($data['precios'] as $precio) {
+            if (!in_array($precio['tamano_id'], $tamanosPermitidos)) {
+                return response()->json([
+                    'message' => 'Tamaño no permitido para este artículo.'
+                ], 422);
+            }
+        }
 
-    public function destroy(ArticuloPrecio $articulo_precio)
-    {
-        $articulo_precio->delete();
-        return response()->noContent();
+        // Reemplazo total
+        $articulo->precios()->delete();
+
+        foreach ($data['precios'] as $precio) {
+            $articulo->precios()->create([
+                'tamano_id' => $precio['tamano_id'],
+                'precio' => $precio['precio'],
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'Precios actualizados correctamente.'
+        ]);
     }
 }

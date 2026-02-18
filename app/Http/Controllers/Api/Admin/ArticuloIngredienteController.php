@@ -149,38 +149,30 @@ class ArticuloIngredienteController extends Controller
             'ingredientes.*.max_cantidad' => ['nullable', 'integer', 'min:1'],
         ]);
 
-        DB::transaction(function () use ($data, $articulo) {
-            foreach ($data['ingredientes'] as $item) {
+        $syncData = [];
 
-                // Ninguno = eliminar relación
-                if ($item['estado'] === 'ninguno') {
-                    ArticuloIngrediente::where([
-                        'articulo_id' => $articulo->id,
-                        'ingrediente_id' => $item['ingrediente_id'],
-                    ])->delete();
-                    continue;
-                }
+        foreach ($data['ingredientes'] as $item) {
 
-                ArticuloIngrediente::updateOrCreate(
-                    [
-                        'articulo_id' => $articulo->id,
-                        'ingrediente_id' => $item['ingrediente_id'],
-                    ],
-                    [
-                        'modo' => $item['estado'],
-                        'obligatorio' => $item['estado'] === 'base'
-                            ? (bool) ($item['obligatorio'] ?? false)
-                            : false,
-                        'incluido_por_defecto' => $item['estado'] === 'base'
-                            ? (bool) ($item['incluido_por_defecto'] ?? true)
-                            : false,
-                        'max_cantidad' => $item['estado'] === 'extra'
-                            ? ($item['max_cantidad'] ?? 1)
-                            : null,
-                    ]
-                );
+            // Si es ninguno → no se añade al sync
+            if ($item['estado'] === 'ninguno') {
+                continue;
             }
-        });
+
+            $syncData[$item['ingrediente_id']] = [
+                'modo' => $item['estado'],
+                'obligatorio' => $item['estado'] === 'base'
+                    ? (bool) ($item['obligatorio'] ?? false)
+                    : false,
+                'incluido_por_defecto' => $item['estado'] === 'base'
+                    ? (bool) ($item['incluido_por_defecto'] ?? true)
+                    : false,
+                'max_cantidad' => $item['estado'] === 'extra'
+                    ? ($item['max_cantidad'] ?? 1)
+                    : null,
+            ];
+        }
+
+        $articulo->ingredientes()->sync($syncData);
 
         return response()->json([
             'message' => 'Ingredientes sincronizados correctamente',

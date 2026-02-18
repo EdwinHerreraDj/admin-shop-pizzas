@@ -13,6 +13,7 @@ import PreciosArticulosIndex from "./pages/precios-articulos/PreciosArticulosInd
 import ArticuloIngredientes from "./pages/articulo-ingredientes/ArticuloIngredientes";
 import CategoriasArticulos from "./pages/categorias-articulos/CategoriasArticulosIndex";
 import OrdenCategorias from "./pages/categorias-articulos/OrdenCategorias";
+import ZonasEnvio from "./pages/zonas-envios/ZonasEnviosIndex";
 
 /* =========================
    INGREDIENTES
@@ -142,3 +143,16 @@ if (categoriasOrdenArticulosRoot) {
         </>,
     );
 }
+
+const zonasEnvioRoot = document.getElementById("zonas-envio-root");
+
+if (zonasEnvioRoot) {
+    createRoot(zonasEnvioRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <ZonasEnvio />
+        </>,
+    );  
+}
+    
+
