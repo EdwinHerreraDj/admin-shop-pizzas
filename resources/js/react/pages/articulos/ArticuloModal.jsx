@@ -313,35 +313,34 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
                         </div>
 
                         {/* Tipo */}
-                        {personalizable && (
-                            <div>
-                                <label className="text-xs font-semibold uppercase text-gray-500">
-                                    Tipo de producto{" "}
-                                    <span className="text-red-500">*</span>
-                                </label>
+                        <div>
+                            <label className="text-xs font-semibold uppercase text-gray-500">
+                                Tipo de producto{" "}
+                                <span className="text-red-500">*</span>
+                            </label>
 
-                                <select
-                                    value={tipoId}
-                                    onChange={(e) => setTipoId(e.target.value)}
-                                    className={`mt-1 w-full h-11 px-3 rounded-xl border ${
-                                        errors.tipo_producto_id
-                                            ? "border-red-500"
-                                            : ""
-                                    }`}
-                                >
-                                    <option value="">
-                                        Selecciona el tipo de producto
+                            <select
+                                value={tipoId}
+                                onChange={(e) => setTipoId(e.target.value)}
+                                className={`mt-1 w-full h-11 px-3 rounded-xl border ${
+                                    errors.tipo_producto_id
+                                        ? "border-red-500"
+                                        : ""
+                                }`}
+                            >
+                                <option value="">
+                                    Selecciona el tipo de producto
+                                </option>
+
+                                {tipos.map((t) => (
+                                    <option key={t.id} value={t.id}>
+                                        {t.nombre}
                                     </option>
-                                    {tipos.map((t) => (
-                                        <option key={t.id} value={t.id}>
-                                            {t.nombre}
-                                        </option>
-                                    ))}
-                                </select>
+                                ))}
+                            </select>
 
-                                <FieldError name="tipo_producto_id" />
-                            </div>
-                        )}
+                            <FieldError name="tipo_producto_id" />
+                        </div>
 
                         {/* Orden */}
                         <div>

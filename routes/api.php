@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\Admin\ArticuloIngredienteController;
 use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
+use App\Http\Controllers\Api\Shop\ArticuloPublicController;
+use App\Http\Controllers\Api\Shop\CategoriaPublicController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -115,4 +117,9 @@ Route::prefix('admin')->group(function () {
     Route::post('zonas-envio', [ZonaEnvioController::class, 'store']);
     Route::put('zonas-envio/{zona}', [ZonaEnvioController::class, 'update']);
     Route::delete('zonas-envio/{zona}', [ZonaEnvioController::class, 'destroy']);
+});
+
+Route::prefix('shop')->group(function () {
+    Route::get('/articulos', [ArticuloPublicController::class, 'index']);
+    Route::get('/categorias', [CategoriaPublicController::class, 'index']);
 });
