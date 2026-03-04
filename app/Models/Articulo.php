@@ -21,6 +21,7 @@ class Articulo extends Model
         'hora_fin_venta',
         'descripcion',
         'imagen',
+        'es_plantilla',
     ];
 
     protected $appends = ['imagen_url'];
@@ -30,6 +31,7 @@ class Articulo extends Model
         'personalizable' => 'boolean',
         'publicado' => 'boolean',
         'orden' => 'integer',
+        'es_plantilla' => 'boolean',
     ];
 
 

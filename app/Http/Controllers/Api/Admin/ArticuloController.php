@@ -99,6 +99,25 @@ class ArticuloController extends Controller
 
     public function update(Request $request, Articulo $articulo)
     {
+   
+        $request->merge([
+            'hora_inicio_venta' => $request->hora_inicio_venta ?: null,
+            'hora_fin_venta'    => $request->hora_fin_venta ?: null,
+        ]);
+
+       
+        if ($request->hora_inicio_venta) {
+            $request->merge([
+                'hora_inicio_venta' => substr($request->hora_inicio_venta, 0, 5),
+            ]);
+        }
+
+        if ($request->hora_fin_venta) {
+            $request->merge([
+                'hora_fin_venta' => substr($request->hora_fin_venta, 0, 5),
+            ]);
+        }
+
         $data = $request->validate([
             'nombre' => ['required', 'string', 'max:150'],
             'descripcion' => ['nullable', 'string', 'max:2000'],

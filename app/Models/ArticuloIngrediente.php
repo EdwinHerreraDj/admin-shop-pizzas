@@ -12,7 +12,7 @@ class ArticuloIngrediente extends Model
     protected $fillable = [
         'articulo_id',
         'ingrediente_id',
-        'tipo',
+        'modo',
         'incluido_por_defecto',
         'obligatorio',
         'max_cantidad',

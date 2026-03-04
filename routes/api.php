@@ -15,6 +15,8 @@ use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
 use App\Http\Controllers\Api\Shop\ArticuloPublicController;
 use App\Http\Controllers\Api\Shop\CategoriaPublicController;
+use App\Http\Controllers\Api\Shop\PizzaPlantillaController;
+use App\Http\Controllers\Api\Shop\PizzasExistentesController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -122,4 +124,8 @@ Route::prefix('admin')->group(function () {
 Route::prefix('shop')->group(function () {
     Route::get('/articulos', [ArticuloPublicController::class, 'index']);
     Route::get('/categorias', [CategoriaPublicController::class, 'index']);
+
+    Route::get('/articulos/{articulo}', [ArticuloPublicController::class, 'show']);
+    Route::get('/pizza-plantilla', [PizzaPlantillaController::class, 'show']);
+    Route::get('/pizzas-existentes', [PizzasExistentesController::class, 'pizzasExistentes']);
 });

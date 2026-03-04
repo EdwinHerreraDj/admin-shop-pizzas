@@ -74,6 +74,29 @@ export default function ArticuloIngredientes({ articuloId }) {
         setDirty(true);
     };
 
+    const marcarTodosComoExtra = (categoria) => {
+        setIngredientes((prev) => {
+            const copy = structuredClone(prev);
+
+            copy[categoria] = copy[categoria].map((i) => {
+                if (i.estado === "ninguno") {
+                    return {
+                        ...i,
+                        estado: "extra",
+                        obligatorio: false,
+                        incluido_por_defecto: false,
+                        max_cantidad: 3,
+                    };
+                }
+                return i;
+            });
+
+            return copy;
+        });
+
+        setDirty(true);
+    };
+
     /* =========================
        GUARDAR
     ========================= */
@@ -279,6 +302,17 @@ export default function ArticuloIngredientes({ articuloId }) {
                                             <h2 className="font-semibold text-gray-800 text-base">
                                                 {categoria}
                                             </h2>
+                                            <button
+                                                onClick={(e) => {
+                                                    e.stopPropagation(); 
+                                                    marcarTodosComoExtra(
+                                                        categoria,
+                                                    );
+                                                }}
+                                                className="text-xs font-semibold text-violet-600 hover:text-violet-700 bg-violet-50 hover:bg-violet-100 px-3 py-1 rounded-lg transition"
+                                            >
+                                                Marcar todos como extra
+                                            </button>
                                             <div className="flex items-center gap-2 flex-wrap">
                                                 {nBase > 0 && (
                                                     <span className="text-xs font-semibold bg-emerald-100 text-emerald-700 px-2.5 py-0.5 rounded-full">

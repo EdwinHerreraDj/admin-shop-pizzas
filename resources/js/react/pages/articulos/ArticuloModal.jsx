@@ -127,8 +127,8 @@ export default function ArticuloModal({ item, tipos, onClose, onSaved }) {
             if (imagen) {
                 form.append("imagen", imagen);
             }
-            if (horaInicio) form.append("hora_inicio_venta", horaInicio);
-            if (horaFin) form.append("hora_fin_venta", horaFin);
+            form.append("hora_inicio_venta", horaInicio || "");
+            form.append("hora_fin_venta", horaFin || "");
 
             if (isEdit) {
                 form.append("_method", "PUT");
