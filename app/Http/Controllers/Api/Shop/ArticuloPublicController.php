@@ -21,13 +21,11 @@ class ArticuloPublicController extends Controller
             // FILTRO HORARIO
             ->where(function ($q) use ($now) {
 
-                // Caso 1: Sin horario definido → visible siempre
                 $q->where(function ($sub) {
                     $sub->whereNull('hora_inicio_venta')
                         ->whereNull('hora_fin_venta');
                 })
 
-                    // Caso 2: Tiene horario → validar rango
                     ->orWhere(function ($sub) use ($now) {
                         $sub->whereNotNull('hora_inicio_venta')
                             ->whereNotNull('hora_fin_venta')
@@ -40,9 +38,7 @@ class ArticuloPublicController extends Controller
                 'tipoProducto:id,nombre',
                 'categorias:id,nombre',
                 'precios.tamano:id,nombre'
-            ])
-
-            ->orderBy('orden');
+            ]);
 
         // 🔎 Búsqueda
         if ($request->filled('search')) {
@@ -51,9 +47,20 @@ class ArticuloPublicController extends Controller
 
         // 🏷️ Filtro por categoría
         if ($request->filled('categoria_id')) {
-            $query->whereHas('categorias', function ($q) use ($request) {
-                $q->where('categorias_articulos.id', $request->categoria_id);
+
+            $categoriaId = $request->categoria_id;
+
+            $query->join('articulo_categoria as ac', function ($join) use ($categoriaId) {
+                $join->on('articulos.id', '=', 'ac.articulo_id')
+                    ->where('ac.categoria_articulo_id', $categoriaId);
             });
+
+            $query->select('articulos.*');
+
+            $query->orderBy('ac.orden');
+        } else {
+
+            $query->orderBy('articulos.orden');
         }
 
         return ArticuloResource::collection(
