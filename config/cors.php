@@ -10,6 +10,8 @@ return [
         'http://localhost:5174',
         'http://localhost:5173',
         'https://shoppizzas.alminares.es',
+        'https://adminpizzasnueva.alminares.es',
+        
     ],
 
     'allowed_origins_patterns' => [],
