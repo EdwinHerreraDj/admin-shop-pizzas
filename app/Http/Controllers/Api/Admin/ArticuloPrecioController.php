@@ -14,21 +14,11 @@ class ArticuloPrecioController extends Controller
      */
     public function index(Articulo $articulo)
     {
-        // Filtrar tamaños según tipo de artículo
-        if ($articulo->personalizable) {
-            $tamanos = Tamano::where('nombre', '!=', 'Único')
-                ->orderBy('orden')
-                ->get();
-        } else {
-            $tamanos = Tamano::where('nombre', 'Único')
-                ->orderBy('orden')
-                ->get();
-        }
+        $tamanos = Tamano::orderBy('orden')->get();
 
         $precios = $articulo->precios()
             ->select('tamano_id', 'precio')
             ->get();
-            
 
         return response()->json([
             'tamanos' => $tamanos,
@@ -47,27 +37,6 @@ class ArticuloPrecioController extends Controller
             'precios.*.precio' => ['required', 'numeric', 'min:0'],
         ]);
 
-        // Obtener tamaños permitidos según tipo de artículo
-        if ($articulo->personalizable) {
-            $tamanosPermitidos = Tamano::where('nombre', '!=', 'Único')
-                ->pluck('id')
-                ->toArray();
-        } else {
-            $tamanosPermitidos = Tamano::where('nombre', 'Único')
-                ->pluck('id')
-                ->toArray();
-        }
-
-        // Validar que solo se envíen tamaños permitidos
-        foreach ($data['precios'] as $precio) {
-            if (!in_array($precio['tamano_id'], $tamanosPermitidos)) {
-                return response()->json([
-                    'message' => 'Tamaño no permitido para este artículo.'
-                ], 422);
-            }
-        }
-
-        // Reemplazo total
         $articulo->precios()->delete();
 
         foreach ($data['precios'] as $precio) {

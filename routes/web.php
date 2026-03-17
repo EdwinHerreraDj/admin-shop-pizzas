@@ -12,6 +12,9 @@ use App\Http\Controllers\Admin\IngredienteController;
 use App\Http\Controllers\Admin\IngredientePrecioController;
 use App\Http\Controllers\Admin\ArticuloController;
 use App\Http\Controllers\Admin\ArticuloPrecioController;
+use App\Http\Controllers\Admin\ZonaEnvioController;
+use App\Http\Controllers\Admin\CategoriaArticuloController;
+use App\Http\Controllers\Admin\CocinaController;
 
 /* MODELOS */
 use App\Models\Articulo;
@@ -154,8 +157,15 @@ Route::middleware('auth')->group(function () {
         }
     )->name('admin.articulos.ingredientes');
 
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - COCINA
+    |--------------------------------------------------------------------------
+    */
 
-
+    Route::get('/admin/cocina', function () {
+        return view('admin.cocina.index');
+    })->name('admin.cocina.index');
 
     /*
     |--------------------------------------------------------------------------

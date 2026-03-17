@@ -35,4 +35,15 @@ class ZonaEnvio extends Model
     {
         return $query->where('codigo_postal', $codigo);
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Relaciones
+    |--------------------------------------------------------------------------
+    */
+
+    public function pedidos()
+    {
+        return $this->hasMany(Pedido::class, 'zona_envio_id');
+    }
 }

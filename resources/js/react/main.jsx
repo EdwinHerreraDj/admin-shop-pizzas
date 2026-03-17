@@ -14,6 +14,7 @@ import ArticuloIngredientes from "./pages/articulo-ingredientes/ArticuloIngredie
 import CategoriasArticulos from "./pages/categorias-articulos/CategoriasArticulosIndex";
 import OrdenCategorias from "./pages/categorias-articulos/OrdenCategorias";
 import ZonasEnvio from "./pages/zonas-envios/ZonasEnviosIndex";
+import CocinaIndex from "./pages/cocina/CocinaIndex";
 
 /* =========================
    INGREDIENTES
@@ -152,7 +153,16 @@ if (zonasEnvioRoot) {
             <Toaster position="top-right" />
             <ZonasEnvio />
         </>,
-    );  
+    );
 }
-    
 
+const cocinaRoot = document.getElementById("cocina-root");
+
+if (cocinaRoot) {
+    createRoot(cocinaRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <CocinaIndex />
+        </>,
+    );
+}
