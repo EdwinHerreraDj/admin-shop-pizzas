@@ -17,7 +17,7 @@ class Pedido extends Model
     protected $fillable = [
         'codigo',
         'estado',
-        'tipo_entrega',        
+        'tipo_entrega',
         'cliente_nombre',
         'cliente_telefono',
         'direccion',
@@ -55,4 +55,5 @@ class Pedido extends Model
     {
         return $this->belongsTo(Repartidor::class, 'repartidor_id');
     }
+
 }

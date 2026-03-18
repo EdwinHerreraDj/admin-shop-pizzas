@@ -135,8 +135,8 @@ Route::prefix('shop')->group(function () {
 
     // ── Pedidos (tienda pública) ───────────────────────────────────────────────
     // POST /api/shop/pedidos              → cliente crea pedido
-    // GET  /api/shop/pedidos/{pedido}     → tracking del cliente
+    // GET  /api/shop/pedidos/{codigo}     → tracking del cliente
     Route::post('/pedidos', [PedidoController::class, 'store']);
-    Route::get('/pedidos/{pedido}', [PedidoController::class, 'show']);
+    Route::get('/pedidos/{codigo}', [PedidoController::class, 'show']);
     Route::get('/zonas-envio', [ZonaEnvioPublicController::class, 'index']);
 });

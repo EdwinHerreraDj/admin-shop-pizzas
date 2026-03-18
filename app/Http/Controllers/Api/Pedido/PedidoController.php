@@ -128,9 +128,11 @@ class PedidoController extends Controller
     // GET /api/shop/pedidos/{pedido}
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function show(Pedido $pedido): JsonResponse
+    public function show(string $codigo): JsonResponse
     {
-        $pedido->load(['items.ingredientes.ingrediente', 'zonaEnvio', 'repartidor']);
+        $pedido = Pedido::where('codigo', $codigo)
+            ->with(['items.ingredientes.ingrediente', 'zonaEnvio', 'repartidor'])
+            ->firstOrFail();
 
         return response()->json($pedido);
     }
