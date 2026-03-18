@@ -166,6 +166,16 @@ Route::middleware('auth')->group(function () {
     Route::get('/admin/cocina', function () {
         return view('admin.cocina.index');
     })->name('admin.cocina.index');
+    
+    /*
+    |--------------------------------------------------------------------------
+    | ADMIN - INFORMES DE PEDIDOS
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get('/admin/gestion-pedidos', function () {
+        return view('admin.gestion-pedidos.index');
+    })->name('admin.gestion-pedidos.index');
 
     /*
     |--------------------------------------------------------------------------

@@ -15,9 +15,7 @@ use Illuminate\Support\Str;
 
 class PedidoController extends Controller
 {
-    public function __construct(private CartValidator $cartValidator)
-    {
-    }
+    public function __construct(private CartValidator $cartValidator) {}
 
     // ─────────────────────────────────────────────────────────────────────────
     // POST /api/shop/pedidos
@@ -25,59 +23,69 @@ class PedidoController extends Controller
 
     public function store(StorePedidoRequest $request): JsonResponse
     {
-        $data    = $request->validated();
-        $cliente = $data['cliente'];
+        $data         = $request->validated();
+        $cliente      = $data['cliente'];
+        $tipoEntrega  = $data['tipo_entrega'];
+        $esRecogida   = $tipoEntrega === 'recogida';
 
-        // ── 1. Validar zona de envío ──────────────────────────────────────
-        $zona = ZonaEnvio::activas()
-            ->porCodigoPostal($cliente['codigo_postal'])
-            ->first();
+        // ── 1. Resolver zona y gastos de envío ────────────────────────────
+        $zona        = null;
+        $gastosEnvio = 0.0;
 
-        if (! $zona) {
-            return response()->json([
-                'message' => 'No realizamos envíos a ese código postal.',
-                'errors'  => [
-                    'cliente.codigo_postal' => ['No realizamos envíos a ese código postal.'],
-                ],
-            ], 422);
+        if (! $esRecogida) {
+            // Buscar zona por código postal Y barrio exacto
+            $zona = ZonaEnvio::activas()
+                ->porCodigoPostal($cliente['codigo_postal'])
+                ->where('barrio', $cliente['barrio'])
+                ->first();
+
+            if (! $zona) {
+                return response()->json([
+                    'message' => 'No realizamos envíos a esa zona.',
+                    'errors'  => [
+                        'cliente.barrio' => ['No realizamos envíos a esa zona.'],
+                    ],
+                ], 422);
+            }
+
+            $gastosEnvio = (float) $zona->recargo;
         }
 
         // ── 2. Validar y recalcular carrito ───────────────────────────────
-        // CartValidator lanza ValidationException si algo no cuadra.
         $carrito = $this->cartValidator->validate($data['items']);
 
         // ── 3. Calcular totales ───────────────────────────────────────────
-        $subtotal    = $carrito['subtotal'];
-        $gastosEnvio = (float) $zona->recargo;
-        $total       = round($subtotal + $gastosEnvio, 2);
+        $subtotal = $carrito['subtotal'];
+        $total    = round($subtotal + $gastosEnvio, 2);
 
         // ── 4. Persistir en transacción ───────────────────────────────────
         $pedido = DB::transaction(function () use (
             $cliente,
             $data,
             $zona,
+            $tipoEntrega,
+            $esRecogida,
             $subtotal,
             $gastosEnvio,
             $total,
             $carrito
         ) {
-            // Crear pedido
             $pedido = Pedido::create([
                 'codigo'           => $this->generarCodigo(),
                 'estado'           => 'pendiente',
                 'cliente_nombre'   => $cliente['nombre'],
                 'cliente_telefono' => $cliente['telefono'],
-                'direccion'        => $cliente['direccion'],
-                'codigo_postal'    => $cliente['codigo_postal'],
-                'zona_envio_id'    => $zona->id,
+                'direccion'        => $esRecogida ? null : $cliente['direccion'],
+                'codigo_postal'    => $esRecogida ? null : $cliente['codigo_postal'],
+                'zona_envio_id'    => $zona?->id,
                 'subtotal'         => $subtotal,
                 'gastos_envio'     => $gastosEnvio,
                 'total'            => $total,
                 'metodo_pago'      => $data['metodo_pago'],
                 'observaciones'    => $data['observaciones'] ?? null,
+                'tipo_entrega'     => $tipoEntrega,
             ]);
 
-            // Crear items y sus ingredientes
             foreach ($carrito['items'] as $itemData) {
                 $item = PedidoItem::create([
                     'pedido_id'       => $pedido->id,
@@ -106,10 +114,8 @@ class PedidoController extends Controller
             return $pedido;
         });
 
-        // ── 5. Cargar relaciones para la respuesta ────────────────────────
         $pedido->load(['items.ingredientes.ingrediente', 'zonaEnvio']);
 
-        // ── 6. Broadcast (preparado — actívalo cuando configures Echo) ────
         // event(new \App\Events\PedidoCreado($pedido));
 
         return response()->json([
@@ -119,7 +125,7 @@ class PedidoController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // GET /api/shop/pedidos/{pedido}  — detalle para tracking del cliente
+    // GET /api/shop/pedidos/{pedido}
     // ─────────────────────────────────────────────────────────────────────────
 
     public function show(Pedido $pedido): JsonResponse
@@ -130,13 +136,10 @@ class PedidoController extends Controller
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // Helpers
-    // ─────────────────────────────────────────────────────────────────────────
 
     private function generarCodigo(): string
     {
         do {
-            // Formato: PED-YYYYMMDD-XXXX  (ej: PED-20260316-A3F7)
             $codigo = 'PED-' . now()->format('Ymd') . '-' . strtoupper(Str::random(4));
         } while (Pedido::where('codigo', $codigo)->exists());
 

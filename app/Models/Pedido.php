@@ -17,6 +17,7 @@ class Pedido extends Model
     protected $fillable = [
         'codigo',
         'estado',
+        'tipo_entrega',        
         'cliente_nombre',
         'cliente_telefono',
         'direccion',
@@ -33,10 +34,10 @@ class Pedido extends Model
     ];
 
     protected $casts = [
-        'subtotal' => 'decimal:2',
+        'subtotal'     => 'decimal:2',
         'gastos_envio' => 'decimal:2',
-        'total' => 'decimal:2',
-        'hora_salida' => 'datetime',
+        'total'        => 'decimal:2',
+        'hora_salida'  => 'datetime',
         'hora_entrega' => 'datetime',
     ];
 

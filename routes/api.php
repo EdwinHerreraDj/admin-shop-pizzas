@@ -20,6 +20,7 @@ use App\Http\Controllers\Api\Shop\CategoriaPublicController;
 use App\Http\Controllers\Api\Shop\PizzaPlantillaController;
 use App\Http\Controllers\Api\Shop\PizzasExistentesController;
 use App\Http\Controllers\Api\Shop\ZonaEnvioPublicController;
+use App\Http\Controllers\Api\Pedido\GestionPedidosController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -101,6 +102,27 @@ Route::prefix('admin')->group(function () {
     // PATCH /api/admin/pedidos/{pedido}/estado     → avanza estado (cocina)
     Route::get('pedidos', [PedidoCocinaController::class, 'index']);
     Route::patch('pedidos/{pedido}/estado', [PedidoCocinaController::class, 'cambiarEstado']);
+
+      // Estadísticas del día
+    Route::get('gestion/resumen', [GestionPedidosController::class, 'resumen']);
+ 
+    // Repartidores activos para selector
+    Route::get('gestion/repartidores', [GestionPedidosController::class, 'repartidores']);
+ 
+    // Listado con filtros
+    Route::get('gestion/pedidos', [GestionPedidosController::class, 'index']);
+ 
+    // Detalle
+    Route::get('gestion/pedidos/{pedido}', [GestionPedidosController::class, 'show']);
+ 
+    // Cambio libre de estado (sin restricciones de flujo)
+    Route::patch('gestion/pedidos/{pedido}/estado', [GestionPedidosController::class, 'cambiarEstado']);
+ 
+    // Editar datos del cliente / observaciones
+    Route::patch('gestion/pedidos/{pedido}/observaciones', [GestionPedidosController::class, 'actualizarObservaciones']);
+ 
+    // Asignar / reasignar repartidor
+    Route::patch('gestion/pedidos/{pedido}/repartidor', [GestionPedidosController::class, 'asignarRepartidor']);
 });
 
 

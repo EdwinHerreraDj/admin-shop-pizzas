@@ -175,7 +175,13 @@ function imprimirComanda(pedido) {
         <div class="linea"></div>
         <div class="fila"><span>Cliente</span><span>${pedido.cliente_nombre}</span></div>
         <div class="fila"><span>Teléfono</span><span>${pedido.cliente_telefono}</span></div>
-        <div class="fila"><span>Dirección</span><span style="max-width:180px;text-align:right">${pedido.direccion}, ${pedido.codigo_postal}</span></div>
+        ${
+            pedido.tipo_entrega === "recogida"
+                ? `<div class="fila" style="font-weight:700;background:#fff3cd;padding:4px 0">
+                <span>⭐ RECOGIDA EN TIENDA</span>
+               </div>`
+                : `<div class="fila"><span>Dirección</span><span style="max-width:180px;text-align:right">${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}</span></div>`
+        }
         <div class="fila"><span>Pago</span><span>${labelPago(pedido.metodo_pago)}</span></div>
         <div class="linea"></div>
         ${itemsHtml}
@@ -304,13 +310,19 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                     </div>
                 </div>
 
-                {/* Dirección */}
-                <div className="flex items-center gap-1.5 text-[11px] text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
-                    <i className="mgc_location_line text-slate-400" />
-                    <span className="truncate">
-                        {pedido.direccion}, {pedido.codigo_postal}
-                    </span>
-                </div>
+                {/* Dirección o recogida en tienda */}
+                {pedido.tipo_entrega === "recogida" ? (
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-2.5 py-1.5 mb-2">
+                        ⭐ Recogida en tienda
+                    </div>
+                ) : (
+                    <div className="flex items-center gap-1.5 text-[11px] text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
+                        <i className="mgc_location_line text-slate-400" />
+                        <span className="truncate">
+                            {pedido.direccion}, {pedido.codigo_postal}
+                        </span>
+                    </div>
+                )}
 
                 {/* Items */}
                 <div className="space-y-0 mb-2">

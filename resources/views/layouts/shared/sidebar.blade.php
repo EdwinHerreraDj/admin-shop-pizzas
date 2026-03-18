@@ -34,14 +34,30 @@
                 </a>
             </li>
 
-            <li class="menu-item">
-                <a href="javascript:void(0)" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_certificate_line"></i></span>
-                    <span class="menu-text"> Pedidos </span>
-                </a>
-            </li>
+
 
             @if (Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
+                <li class="menu-item">
+                    <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_certificate_line"></i></span>
+                        <span class="menu-text"> Pedidos </span>
+                        <span class="menu-arrow"></span>
+                    </a>
+
+                    <ul class="sub-menu hidden">
+                        <li class="menu-item">
+                            <a href="{{ route('admin.gestion-pedidos.index') }}" class="menu-link">
+                                <span class="menu-text">Gestión de pedidos</span>
+                            </a>
+                        </li>
+                        <li class="menu-item">
+                            <a href="{{ route('admin.cocina.index') }}" class="menu-link">
+                                <span class="menu-text">Pedidos Cocina</span>
+                            </a>
+                        </li>
+                    </ul>
+
+                </li>
 
                 <li class="menu-item">
                     <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
@@ -94,7 +110,7 @@
                         </li>
                     </ul>
                 </li>
-                
+
 
                 <li class="menu-item">
                     <a href="{{ route('admin.tamanos.index') }}" class="menu-link">
@@ -102,7 +118,7 @@
                         <span class="menu-text"> Tamaños </span>
                     </a>
                 </li>
-                
+
                 <li class="menu-item">
                     <a href="{{ route('admin.zonas-envio.index') }}" class="menu-link">
                         <span class="menu-icon"><i class="mgc_riding_line"></i></span>
