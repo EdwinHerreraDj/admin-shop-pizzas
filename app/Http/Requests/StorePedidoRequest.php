@@ -37,6 +37,9 @@ class StorePedidoRequest extends FormRequest
             // ── Observaciones ─────────────────────────────────────────────
             'observaciones' => ['nullable', 'string', 'max:1000'],
 
+            // ── Hora deseada ─────────────────────────────────────────────
+            'hora_deseada' => ['nullable', 'string', 'date_format:H:i'],
+
             // ── Items ─────────────────────────────────────────────────────
             'items'          => ['required', 'array', 'min:1'],
             'items.*.cantidad' => ['required', 'integer', 'min:1', 'max:99'],

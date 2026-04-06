@@ -25,8 +25,9 @@ class CambiarEstadoPedidoRequest extends FormRequest
                     'aceptado',
                     'en_preparacion',
                     'listo',
-                    'cancelado',    // válido desde pendiente, aceptado, en_preparacion
-                                    // NO válido desde listo — el controlador lo rechaza
+                    'en_camino',
+                    'entregado',
+                    'cancelado',
                 ]),
             ],
         ];

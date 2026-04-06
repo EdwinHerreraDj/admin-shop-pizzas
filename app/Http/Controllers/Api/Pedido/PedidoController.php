@@ -7,8 +7,11 @@ use App\Http\Requests\StorePedidoRequest;
 use App\Models\Pedido;
 use App\Models\PedidoItem;
 use App\Models\PedidoItemIngrediente;
+use App\Models\FranjaHoraria;
+use App\Models\MetodoPago;
 use App\Models\ZonaEnvio;
 use App\Services\CartValidator;
+use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -51,8 +54,58 @@ class PedidoController extends Controller
             $gastosEnvio = (float) $zona->recargo;
         }
 
+        // ── 1.1 Validar método de pago según tipo de entrega ───────────
+        $metodoPago = MetodoPago::where('clave', $data['metodo_pago'])->first();
+        $campoActivo = $esRecogida ? 'activo_recogida' : 'activo_domicilio';
+
+        if (! $metodoPago || ! $metodoPago->{$campoActivo}) {
+            return response()->json([
+                'message' => 'Este método de pago no está disponible para este tipo de entrega.',
+                'errors'  => ['metodo_pago' => ['Este método de pago no está disponible para este tipo de entrega.']],
+            ], 422);
+        }
+
         // ── 2. Validar y recalcular carrito ───────────────────────────────
         $carrito = $this->cartValidator->validate($data['items']);
+
+        // ── 2.1 Validar pedido mínimo de la zona ─────────────────────────
+        if ($zona && $zona->pedido_minimo > 0 && $carrito['subtotal'] < (float) $zona->pedido_minimo) {
+            return response()->json([
+                'message' => "El pedido mínimo para esta zona es de {$zona->pedido_minimo} €.",
+                'errors'  => [
+                    'pedido_minimo' => ["El pedido mínimo para esta zona es de {$zona->pedido_minimo} €."],
+                ],
+            ], 422);
+        }
+
+        // ── 2.2 Validar hora deseada ─────────────────────────────────────
+        $horaDeseada = $data['hora_deseada'] ?? null;
+
+        if ($horaDeseada) {
+            $ahora      = Carbon::now();
+            $diaSemana  = $ahora->dayOfWeekIso - 1;
+            $horaMinima = $ahora->copy()->addMinutes(60)->format('H:i');
+
+            if ($horaDeseada < $horaMinima) {
+                return response()->json([
+                    'message' => 'La hora seleccionada debe ser al menos 1 hora desde ahora.',
+                    'errors'  => ['hora_deseada' => ['La hora seleccionada debe ser al menos 1 hora desde ahora.']],
+                ], 422);
+            }
+
+            $dentroFranja = FranjaHoraria::activas()
+                ->delDia($diaSemana)
+                ->where('hora_apertura', '<=', $horaDeseada)
+                ->where('hora_cierre', '>', $horaDeseada)
+                ->exists();
+
+            if (! $dentroFranja) {
+                return response()->json([
+                    'message' => 'La hora seleccionada está fuera del horario de servicio.',
+                    'errors'  => ['hora_deseada' => ['La hora seleccionada está fuera del horario de servicio.']],
+                ], 422);
+            }
+        }
 
         // ── 3. Calcular totales ───────────────────────────────────────────
         $subtotal = $carrito['subtotal'];
@@ -68,7 +121,8 @@ class PedidoController extends Controller
             $subtotal,
             $gastosEnvio,
             $total,
-            $carrito
+            $carrito,
+            $horaDeseada
         ) {
             $pedido = Pedido::create([
                 'codigo'           => $this->generarCodigo(),
@@ -83,6 +137,7 @@ class PedidoController extends Controller
                 'total'            => $total,
                 'metodo_pago'      => $data['metodo_pago'],
                 'observaciones'    => $data['observaciones'] ?? null,
+                'hora_deseada'     => $horaDeseada,
                 'tipo_entrega'     => $tipoEntrega,
             ]);
 

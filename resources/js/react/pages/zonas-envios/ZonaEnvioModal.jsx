@@ -8,6 +8,7 @@ export default function ZonaEnvioModal({ item, onClose, onSaved }) {
     const [codigoPostal, setCodigoPostal] = useState("");
     const [barrio, setBarrio] = useState("");
     const [recargo, setRecargo] = useState("0.00");
+    const [pedidoMinimo, setPedidoMinimo] = useState("0.00");
     const [activo, setActivo] = useState(true);
 
     const [errors, setErrors] = useState({});
@@ -18,6 +19,7 @@ export default function ZonaEnvioModal({ item, onClose, onSaved }) {
             setCodigoPostal(item.codigo_postal ?? "");
             setBarrio(item.barrio ?? "");
             setRecargo(item.recargo ?? "0.00");
+            setPedidoMinimo(item.pedido_minimo ?? "0.00");
             setActivo(!!item.activo);
         }
     }, [item]);
@@ -31,6 +33,7 @@ export default function ZonaEnvioModal({ item, onClose, onSaved }) {
                 codigo_postal: codigoPostal,
                 barrio,
                 recargo,
+                pedido_minimo: pedidoMinimo,
                 activo,
             };
 
@@ -204,6 +207,37 @@ export default function ZonaEnvioModal({ item, onClose, onSaved }) {
                         {errors.recargo && (
                             <div className="mt-1 text-xs text-red-600">
                                 {errors.recargo[0]}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Pedido Mínimo */}
+                    <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Pedido Mínimo (€)
+                        </label>
+
+                        <input
+                            type="number"
+                            step="0.01"
+                            value={pedidoMinimo}
+                            onChange={(e) => setPedidoMinimo(e.target.value)}
+                            className="
+                        mt-1 w-full h-11 px-3
+                        rounded-xl
+                        border border-gray-300
+                        bg-white
+                        font-medium
+                        focus:outline-none
+                        focus:ring-2
+                        focus:ring-violet-500/40
+                        focus:border-violet-500
+                    "
+                        />
+
+                        {errors.pedido_minimo && (
+                            <div className="mt-1 text-xs text-red-600">
+                                {errors.pedido_minimo[0]}
                             </div>
                         )}
                     </div>

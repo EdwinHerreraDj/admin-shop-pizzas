@@ -176,6 +176,9 @@ export default function ZonasEnvioIndex() {
                                     <th className="px-6 py-4 w-[140px]">
                                         Recargo
                                     </th>
+                                    <th className="px-6 py-4 w-[140px]">
+                                        Pedido Mín.
+                                    </th>
                                     <th className="px-6 py-4 w-[120px]">
                                         Activo
                                     </th>
@@ -189,7 +192,7 @@ export default function ZonasEnvioIndex() {
                                 {items.length === 0 ? (
                                     <tr>
                                         <td
-                                            colSpan="5"
+                                            colSpan="6"
                                             className="px-6 py-16 text-center"
                                         >
                                             <div className="flex flex-col items-center justify-center gap-3 text-gray-400">
@@ -224,6 +227,10 @@ export default function ZonasEnvioIndex() {
 
                                             <td className="px-6 py-5 text-gray-700 font-medium">
                                                 {zona.recargo} €
+                                            </td>
+
+                                            <td className="px-6 py-5 text-gray-700 font-medium">
+                                                {zona.pedido_minimo} €
                                             </td>
 
                                             <td className="px-6 py-5">

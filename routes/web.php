@@ -120,6 +120,14 @@ Route::middleware('auth')->group(function () {
         return view('admin.zonas-envio.index');
     })->name('admin.zonas-envio.index');
 
+    Route::get('/admin/franjas-horarias', function () {
+        return view('admin.franjas-horarias.index');
+    })->name('admin.franjas-horarias.index');
+
+    Route::get('/admin/metodos-pago', function () {
+        return view('admin.metodos-pago.index');
+    })->name('admin.metodos-pago.index');
+
     /*
 |--------------------------------------------------------------------------
 | ADMIN - CATEGORÍAS DE ARTÍCULOS

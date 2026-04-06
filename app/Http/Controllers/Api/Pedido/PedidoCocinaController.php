@@ -11,24 +11,23 @@ use Illuminate\Http\Request;
 class PedidoCocinaController extends Controller
 {
     // ─────────────────────────────────────────────────────────────────────────
-    // Estados que gestiona este módulo (cocina termina en "listo")
-    // en_camino y entregado pertenecen al módulo de reparto
+    // Estados visibles en el panel cocina (entregado NO se muestra)
     // ─────────────────────────────────────────────────────────────────────────
     private const ESTADOS_COCINA = [
         'pendiente',
         'aceptado',
         'en_preparacion',
         'listo',
+        'en_camino',
     ];
 
-    // Transiciones permitidas DESDE este módulo.
-    // "listo" no permite cancelar — un pedido terminado lo anula
-    // un flujo administrativo aparte, no el operario de cocina.
+    // Transiciones permitidas — flujo completo sin repartidores
     private const TRANSICIONES_COCINA = [
         'pendiente'      => ['aceptado',       'cancelado'],
         'aceptado'       => ['en_preparacion', 'cancelado'],
         'en_preparacion' => ['listo',          'cancelado'],
-        'listo'          => [],                // cocina no avanza ni cancela desde aquí
+        'listo'          => ['en_camino',      'cancelado'],
+        'en_camino'      => ['entregado'],
     ];
 
     // Relaciones que se cargan siempre.
@@ -109,8 +108,17 @@ class PedidoCocinaController extends Controller
             ], 422);
         }
 
-        // 3. Persistir
-        $pedido->update(['estado' => $nuevoEstado]);
+        // 3. Persistir con timestamps automáticos
+        $updates = ['estado' => $nuevoEstado];
+
+        if ($nuevoEstado === 'en_camino' && ! $pedido->hora_salida) {
+            $updates['hora_salida'] = now();
+        }
+        if ($nuevoEstado === 'entregado' && ! $pedido->hora_entrega) {
+            $updates['hora_entrega'] = now();
+        }
+
+        $pedido->update($updates);
 
         // 4. Broadcast (activar al configurar Echo/Reverb)
         // event(new \App\Events\PedidoEstadoCambiado($pedido));

@@ -14,6 +14,8 @@ import ArticuloIngredientes from "./pages/articulo-ingredientes/ArticuloIngredie
 import CategoriasArticulos from "./pages/categorias-articulos/CategoriasArticulosIndex";
 import OrdenCategorias from "./pages/categorias-articulos/OrdenCategorias";
 import ZonasEnvio from "./pages/zonas-envios/ZonasEnviosIndex";
+import FranjasHorarias from "./pages/franjas-horarias/FranjasHorariasIndex";
+import MetodosPago from "./pages/metodos-pago/MetodosPagoIndex";
 import CocinaIndex from "./pages/cocina/CocinaIndex";
 import GestionPedidosIndex from "./pages/gestion-pedidos/GestionPedidoIndex";
 
@@ -153,6 +155,28 @@ if (zonasEnvioRoot) {
         <>
             <Toaster position="top-right" />
             <ZonasEnvio />
+        </>,
+    );
+}
+
+const metodosPagoRoot = document.getElementById("metodos-pago-root");
+
+if (metodosPagoRoot) {
+    createRoot(metodosPagoRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <MetodosPago />
+        </>,
+    );
+}
+
+const franjasHorariasRoot = document.getElementById("franjas-horarias-root");
+
+if (franjasHorariasRoot) {
+    createRoot(franjasHorariasRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <FranjasHorarias />
         </>,
     );
 }

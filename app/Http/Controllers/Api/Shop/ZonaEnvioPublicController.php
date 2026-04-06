@@ -11,7 +11,7 @@ class ZonaEnvioPublicController extends Controller
     {
         return response()->json(
             ZonaEnvio::where('activo', true)
-                ->select('codigo_postal', 'barrio', 'recargo')
+                ->select('codigo_postal', 'barrio', 'recargo', 'pedido_minimo')
                 ->orderBy('codigo_postal')
                 ->get()
         );

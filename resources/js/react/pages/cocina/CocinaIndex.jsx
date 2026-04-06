@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { imprimirTicketQZ } from "@/react/lib/qzPrinter";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constantes
@@ -14,16 +15,14 @@ const ESTADOS = {
         color: "violet",
         siguiente: "listo",
     },
-    // Cocina termina aquí. El módulo de reparto es quien avanza de listo → en_camino.
-    listo: { label: "Listo", color: "emerald", siguiente: null },
+    listo: { label: "Listo", color: "emerald", siguiente: "en_camino" },
     en_camino: { label: "En camino", color: "cyan", siguiente: "entregado" },
     entregado: { label: "Entregado", color: "slate", siguiente: null },
     cancelado: { label: "Cancelado", color: "rose", siguiente: null },
 };
 
-// Panel de cocina: solo estos 4 estados.
-// en_camino y entregado son responsabilidad del módulo de reparto.
-const COLUMNAS = ["pendiente", "aceptado", "en_preparacion", "listo"];
+// Panel de cocina: 5 columnas visibles. Entregado desaparece del panel.
+const COLUMNAS = ["pendiente", "aceptado", "en_preparacion", "listo", "en_camino"];
 
 // Fix #1: separar colBg y colBorder — eliminado el frágil .split(" ")[1]
 const COLOR_CLASSES = {
@@ -117,7 +116,15 @@ function esCritico(fechaStr, estado) {
 // Impresión de comanda (ventana del navegador)
 // ─────────────────────────────────────────────────────────────────────────────
 
-function imprimirComanda(pedido) {
+async function imprimirComanda(pedido) {
+    // Intentar impresión térmica vía QZ Tray
+    const impreso = await imprimirTicketQZ(pedido);
+    if (impreso) {
+        toast.success("Ticket enviado a impresora");
+        return;
+    }
+
+    // Fallback: ventana del navegador
     const ventana = window.open("", "_blank", "width=400,height=620");
 
     // Fix: el navegador puede bloquear popups — fallback con toast
@@ -183,6 +190,7 @@ function imprimirComanda(pedido) {
                 : `<div class="fila"><span>Dirección</span><span style="max-width:180px;text-align:right">${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}</span></div>`
         }
         <div class="fila"><span>Pago</span><span>${labelPago(pedido.metodo_pago)}</span></div>
+        ${pedido.hora_deseada ? `<div class="fila" style="font-weight:700;background:#ede9fe;padding:4px 0"><span>🕐 Hora deseada</span><span>${pedido.hora_deseada}</span></div>` : ""}
         <div class="linea"></div>
         ${itemsHtml}
         <div class="linea"></div>
@@ -272,6 +280,7 @@ function LineaIngrediente({ ing }) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
+    const [confirmCancelar, setConfirmCancelar] = useState(false);
     const cfg = ESTADOS[pedido.estado] ?? ESTADOS.pendiente;
     const colors = COLOR_CLASSES[cfg.color];
     const siguiente = cfg.siguiente;
@@ -321,6 +330,13 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                         <span className="truncate">
                             {pedido.direccion}, {pedido.codigo_postal}
                         </span>
+                    </div>
+                )}
+
+                {/* Hora deseada */}
+                {pedido.hora_deseada && (
+                    <div className="flex items-center gap-1.5 text-[11px] font-semibold text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2.5 py-1.5 mb-2">
+                        🕐 Hora deseada: {pedido.hora_deseada}
                     </div>
                 )}
 
@@ -375,8 +391,8 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                     </div>
                 )}
 
-                {/* Total + acciones */}
-                <div className="flex items-center justify-between gap-2 pt-1.5 border-t border-slate-100">
+                {/* Total */}
+                <div className="flex items-center justify-between pt-1.5 border-t border-slate-100">
                     <div>
                         {Number(pedido.gastos_envio) > 0 && (
                             <div className="text-[10px] text-slate-400">
@@ -388,47 +404,82 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                             {Number(pedido.total).toFixed(2)}€
                         </div>
                     </div>
+                </div>
 
-                    <div className="flex items-center gap-1.5">
-                        {/* Imprimir */}
+                {/* Acciones */}
+                <div className="flex items-center gap-2 pt-2">
+                    {/* Imprimir */}
+                    <button
+                        onClick={() => imprimirComanda(pedido)}
+                        title="Imprimir comanda"
+                        className="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 transition text-lg active:scale-95"
+                    >
+                        <i className="mgc_print_line" />
+                    </button>
+
+                    {/* Cancelar */}
+                    {!["entregado", "cancelado", "en_camino"].includes(
+                        pedido.estado,
+                    ) && (
                         <button
-                            onClick={() => imprimirComanda(pedido)}
-                            title="Imprimir comanda"
-                            className="h-8 w-8 flex items-center justify-center rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 transition text-sm"
+                            onClick={() => setConfirmCancelar(true)}
+                            disabled={cargando}
+                            className="h-12 flex-1 rounded-2xl border border-rose-200 bg-rose-50 text-rose-600 text-sm font-semibold hover:bg-rose-100 transition disabled:opacity-50 active:scale-95"
                         >
-                            <i className="mgc_print_line" />
+                            Cancelar
                         </button>
+                    )}
 
-                        {/* Cancelar */}
-                        {!["entregado", "cancelado", "en_camino"].includes(
-                            pedido.estado,
-                        ) && (
-                            <button
-                                onClick={() =>
-                                    onCambiarEstado(pedido.id, "cancelado")
-                                }
-                                disabled={cargando}
-                                className="h-8 px-2.5 rounded-xl border border-rose-200 bg-rose-50 text-rose-600 text-[11px] font-semibold hover:bg-rose-100 transition disabled:opacity-50"
-                            >
-                                Cancelar
-                            </button>
-                        )}
-
-                        {/* Avanzar */}
-                        {siguiente && (
-                            <button
-                                onClick={() =>
-                                    onCambiarEstado(pedido.id, siguiente)
-                                }
-                                disabled={cargando}
-                                className={`h-8 px-3 rounded-xl text-white text-[11px] font-bold transition disabled:opacity-50 ${COLOR_CLASSES[siguienteCfg.color]?.btn ?? "bg-slate-500"}`}
-                            >
-                                {cargando ? "…" : `${siguienteCfg.label} →`}
-                            </button>
-                        )}
-                    </div>
+                    {/* Avanzar */}
+                    {siguiente && (
+                        <button
+                            onClick={() =>
+                                onCambiarEstado(pedido.id, siguiente)
+                            }
+                            disabled={cargando}
+                            className={`h-12 flex-1 rounded-2xl text-white text-sm font-bold transition disabled:opacity-50 active:scale-95 ${COLOR_CLASSES[siguienteCfg.color]?.btn ?? "bg-slate-500"}`}
+                        >
+                            {cargando ? "…" : `${siguienteCfg.label} →`}
+                        </button>
+                    )}
                 </div>
             </div>
+
+            {/* Modal confirmación cancelar */}
+            {confirmCancelar && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm px-4">
+                    <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl overflow-hidden">
+                        <div className="px-6 py-5 bg-gradient-to-r from-rose-500 to-red-600 text-white text-center">
+                            <div className="text-3xl mb-2">⚠️</div>
+                            <h3 className="font-bold text-lg">¿Cancelar pedido?</h3>
+                            <p className="text-white/80 text-sm mt-1">
+                                {pedido.codigo} — {pedido.cliente_nombre}
+                            </p>
+                        </div>
+                        <div className="px-6 py-4 text-center text-sm text-slate-600">
+                            Esta acción no se puede deshacer.
+                        </div>
+                        <div className="px-6 py-4 flex gap-3">
+                            <button
+                                onClick={() => setConfirmCancelar(false)}
+                                className="h-12 flex-1 rounded-2xl border border-slate-200 bg-white text-slate-700 text-sm font-semibold hover:bg-slate-50 transition active:scale-95"
+                            >
+                                No, volver
+                            </button>
+                            <button
+                                onClick={() => {
+                                    setConfirmCancelar(false);
+                                    onCambiarEstado(pedido.id, "cancelado");
+                                }}
+                                disabled={cargando}
+                                className="h-12 flex-1 rounded-2xl bg-rose-600 text-white text-sm font-bold hover:bg-rose-700 transition disabled:opacity-50 active:scale-95"
+                            >
+                                Sí, cancelar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -531,9 +582,13 @@ export default function CocinaIndex() {
                 },
             );
             const actualizado = res.data.pedido;
-            setPedidos((prev) =>
-                prev.map((p) => (p.id === pedidoId ? actualizado : p)),
-            );
+            if (nuevoEstado === "entregado" || nuevoEstado === "cancelado") {
+                setPedidos((prev) => prev.filter((p) => p.id !== pedidoId));
+            } else {
+                setPedidos((prev) =>
+                    prev.map((p) => (p.id === pedidoId ? actualizado : p)),
+                );
+            }
             toast.success(`Pedido → ${ESTADOS[nuevoEstado]?.label}`);
         } catch (e) {
             toast.error(

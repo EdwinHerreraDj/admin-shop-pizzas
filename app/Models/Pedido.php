@@ -31,6 +31,7 @@ class Pedido extends Model
         'hora_salida',
         'hora_entrega',
         'observaciones',
+        'hora_deseada',
     ];
 
     protected $casts = [

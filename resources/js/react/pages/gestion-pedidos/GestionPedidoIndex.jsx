@@ -343,71 +343,10 @@ function ModalEditar({ pedido, onClose, onSaved }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Modal: asignar repartidor
-// ─────────────────────────────────────────────────────────────────────────────
-
-function ModalRepartidor({ pedido, repartidores, onClose, onSaved }) {
-    const [repartidorId, setRepartidorId] = useState(
-        pedido.repartidor_id ?? "",
-    );
-    const [loading, setLoading] = useState(false);
-
-    const guardar = async () => {
-        setLoading(true);
-        try {
-            const res = await axios.patch(
-                `/api/admin/gestion/pedidos/${pedido.id}/repartidor`,
-                {
-                    repartidor_id: repartidorId || null,
-                },
-            );
-            toast.success(res.data.message);
-            onSaved(res.data.pedido);
-            onClose();
-        } catch (e) {
-            toast.error(
-                e?.response?.data?.message ?? "Error al asignar repartidor",
-            );
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <Modal
-            titulo={`Asignar repartidor — ${pedido.codigo}`}
-            onClose={onClose}
-            footer={
-                <>
-                    <BtnCancelar onClick={onClose} />
-                    <BtnGuardar loading={loading} onClick={guardar} />
-                </>
-            }
-        >
-            <div>
-                <FormLabel>Repartidor</FormLabel>
-                <FormSelect
-                    name="repartidor"
-                    value={repartidorId}
-                    onChange={(e) => setRepartidorId(e.target.value)}
-                >
-                    <option value="">— Sin asignar —</option>
-                    {repartidores.map((r) => (
-                        <option key={r.id} value={r.id}>
-                            {r.nombre} · {r.telefono}
-                        </option>
-                    ))}
-                </FormSelect>
-            </div>
-        </Modal>
-    );
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
 // Fila de pedido expandible
 // ─────────────────────────────────────────────────────────────────────────────
 
-function FilaPedido({ pedido, repartidores, onActualizar }) {
+function FilaPedido({ pedido, onActualizar }) {
     const [expandido, setExpandido] = useState(false);
     const [modal, setModal] = useState(null);
 
@@ -464,11 +403,6 @@ function FilaPedido({ pedido, repartidores, onActualizar }) {
                                 icon: "mgc_edit_line",
                                 title: "Editar datos",
                             },
-                            {
-                                key: "repartidor",
-                                icon: "mgc_user_3_line",
-                                title: "Asignar repartidor",
-                            },
                         ].map(({ key, icon, title }) => (
                             <button
                                 key={key}
@@ -503,16 +437,6 @@ function FilaPedido({ pedido, repartidores, onActualizar }) {
                                     <div className="text-xs text-slate-400 mt-0.5">
                                         {pedido.direccion},{" "}
                                         {pedido.codigo_postal}
-                                    </div>
-                                )}
-                                {pedido.repartidor && (
-                                    <div className="text-xs mt-1">
-                                        <span className="text-slate-400">
-                                            Repartidor:{" "}
-                                        </span>
-                                        <span className="font-semibold text-slate-700">
-                                            {pedido.repartidor.nombre}
-                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -613,14 +537,6 @@ function FilaPedido({ pedido, repartidores, onActualizar }) {
                     onSaved={onActualizar}
                 />
             )}
-            {modal === "repartidor" && (
-                <ModalRepartidor
-                    pedido={pedido}
-                    repartidores={repartidores}
-                    onClose={() => setModal(null)}
-                    onSaved={onActualizar}
-                />
-            )}
         </>
     );
 }
@@ -638,7 +554,6 @@ export default function GestionPedidosIndex() {
     });
     const [pagina, setPagina] = useState(1);
     const [resumen, setResumen] = useState(null);
-    const [repartidores, setRepartidores] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const [filtros, setFiltros] = useState({
@@ -648,13 +563,6 @@ export default function GestionPedidosIndex() {
         tipo_entrega: "",
         search: "",
     });
-
-    useEffect(() => {
-        axios
-            .get("/api/admin/gestion/repartidores")
-            .then(({ data }) => setRepartidores(data))
-            .catch(() => {});
-    }, []);
 
     const cargar = useCallback(async () => {
         setLoading(true);
@@ -953,7 +861,6 @@ export default function GestionPedidosIndex() {
                                     <FilaPedido
                                         key={p.id}
                                         pedido={p}
-                                        repartidores={repartidores}
                                         onActualizar={onActualizar}
                                     />
                                 ))}

@@ -32,6 +32,7 @@ class ZonaEnvioController extends Controller
             'codigo_postal' => 'required|string|max:10',
             'barrio' => 'required|string|max:255',
             'recargo' => 'required|numeric|min:0',
+            'pedido_minimo' => 'required|numeric|min:0',
             'activo' => 'required|boolean',
         ]);
 
@@ -46,6 +47,7 @@ class ZonaEnvioController extends Controller
             'codigo_postal' => 'required|string|max:10',
             'barrio' => 'required|string|max:255',
             'recargo' => 'required|numeric|min:0',
+            'pedido_minimo' => 'required|numeric|min:0',
             'activo' => 'required|boolean',
         ]);
 

@@ -127,6 +127,20 @@
                 </li>
 
                 <li class="menu-item">
+                    <a href="{{ route('admin.franjas-horarias.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_time_line"></i></span>
+                        <span class="menu-text"> Franjas horarias </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{ route('admin.metodos-pago.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_bank_card_line"></i></span>
+                        <span class="menu-text"> Métodos de pago </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
                     <a href="javascript:void(0)" data-fc-type="collapse" class="menu-link">
                         <span class="menu-icon"><i class="mgc_user_3_line"></i></span>
                         <span class="menu-text"> Usuarios </span>

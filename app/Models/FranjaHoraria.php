@@ -4,22 +4,31 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
-class ZonaEnvio extends Model
+class FranjaHoraria extends Model
 {
-    protected $table = 'zonas_envio';
+    protected $table = 'franjas_horarias';
 
     protected $fillable = [
-        'codigo_postal',
-        'barrio',
-        'recargo',
-        'pedido_minimo',
+        'dia_semana',
+        'hora_apertura',
+        'hora_cierre',
         'activo',
     ];
 
     protected $casts = [
-        'recargo' => 'decimal:2',
-        'pedido_minimo' => 'decimal:2',
+        'dia_semana' => 'integer',
         'activo' => 'boolean',
+    ];
+
+    // 0 = lunes … 6 = domingo
+    public const DIAS = [
+        0 => 'Lunes',
+        1 => 'Martes',
+        2 => 'Miércoles',
+        3 => 'Jueves',
+        4 => 'Viernes',
+        5 => 'Sábado',
+        6 => 'Domingo',
     ];
 
     /*
@@ -33,19 +42,19 @@ class ZonaEnvio extends Model
         return $query->where('activo', true);
     }
 
-    public function scopePorCodigoPostal($query, $codigo)
+    public function scopeDelDia($query, int $dia)
     {
-        return $query->where('codigo_postal', $codigo);
+        return $query->where('dia_semana', $dia);
     }
 
     /*
     |--------------------------------------------------------------------------
-    | Relaciones
+    | Helpers
     |--------------------------------------------------------------------------
     */
 
-    public function pedidos()
+    public function getNombreDiaAttribute(): string
     {
-        return $this->hasMany(Pedido::class, 'zona_envio_id');
+        return self::DIAS[$this->dia_semana] ?? '?';
     }
 }

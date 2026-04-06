@@ -13,6 +13,8 @@ use App\Http\Controllers\Api\Admin\ArticuloIngredienteController;
 use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
+use App\Http\Controllers\Api\Admin\FranjaHorariaController;
+use App\Http\Controllers\Api\Admin\MetodoPagoController;
 use App\Http\Controllers\Api\Pedido\PedidoCocinaController;
 use App\Http\Controllers\Api\Pedido\PedidoController;
 use App\Http\Controllers\Api\Shop\ArticuloPublicController;
@@ -20,6 +22,8 @@ use App\Http\Controllers\Api\Shop\CategoriaPublicController;
 use App\Http\Controllers\Api\Shop\PizzaPlantillaController;
 use App\Http\Controllers\Api\Shop\PizzasExistentesController;
 use App\Http\Controllers\Api\Shop\ZonaEnvioPublicController;
+use App\Http\Controllers\Api\Shop\FranjaHorariaPublicController;
+use App\Http\Controllers\Api\Shop\MetodoPagoPublicController;
 use App\Http\Controllers\Api\Pedido\GestionPedidosController;
 
 
@@ -97,6 +101,16 @@ Route::prefix('admin')->group(function () {
     Route::put('zonas-envio/{zona}', [ZonaEnvioController::class, 'update']);
     Route::delete('zonas-envio/{zona}', [ZonaEnvioController::class, 'destroy']);
 
+    /* Franjas horarias */
+    Route::get('franjas-horarias', [FranjaHorariaController::class, 'index']);
+    Route::post('franjas-horarias', [FranjaHorariaController::class, 'store']);
+    Route::put('franjas-horarias/{franja}', [FranjaHorariaController::class, 'update']);
+    Route::delete('franjas-horarias/{franja}', [FranjaHorariaController::class, 'destroy']);
+
+    /* Métodos de pago */
+    Route::get('metodos-pago', [MetodoPagoController::class, 'index']);
+    Route::put('metodos-pago/{metodo}', [MetodoPagoController::class, 'update']);
+
     // ── Panel cocina ──────────────────────────────────────────────────────────
     // GET  /api/admin/pedidos                      → lista pedidos activos de cocina
     // PATCH /api/admin/pedidos/{pedido}/estado     → avanza estado (cocina)
@@ -105,24 +119,18 @@ Route::prefix('admin')->group(function () {
 
       // Estadísticas del día
     Route::get('gestion/resumen', [GestionPedidosController::class, 'resumen']);
- 
-    // Repartidores activos para selector
-    Route::get('gestion/repartidores', [GestionPedidosController::class, 'repartidores']);
- 
+
     // Listado con filtros
     Route::get('gestion/pedidos', [GestionPedidosController::class, 'index']);
- 
+
     // Detalle
     Route::get('gestion/pedidos/{pedido}', [GestionPedidosController::class, 'show']);
- 
+
     // Cambio libre de estado (sin restricciones de flujo)
     Route::patch('gestion/pedidos/{pedido}/estado', [GestionPedidosController::class, 'cambiarEstado']);
- 
+
     // Editar datos del cliente / observaciones
     Route::patch('gestion/pedidos/{pedido}/observaciones', [GestionPedidosController::class, 'actualizarObservaciones']);
- 
-    // Asignar / reasignar repartidor
-    Route::patch('gestion/pedidos/{pedido}/repartidor', [GestionPedidosController::class, 'asignarRepartidor']);
 });
 
 
@@ -139,4 +147,6 @@ Route::prefix('shop')->group(function () {
     Route::post('/pedidos', [PedidoController::class, 'store']);
     Route::get('/pedidos/{codigo}', [PedidoController::class, 'show']);
     Route::get('/zonas-envio', [ZonaEnvioPublicController::class, 'index']);
+    Route::get('/franjas-horarias', [FranjaHorariaPublicController::class, 'index']);
+    Route::get('/metodos-pago', [MetodoPagoPublicController::class, 'index']);
 });

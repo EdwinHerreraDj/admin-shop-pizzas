@@ -361,8 +361,8 @@ class CartValidator
                 $this->fail("{$quitadoPrefix}.ingredienteId", 'Ingrediente a quitar no pertenece a este artículo.');
             }
 
-            // Solo tiene sentido quitar lo que viene por defecto
-            if (! $ingrediente->pivot->incluido_por_defecto) {
+            // Solo tiene sentido quitar lo que viene incluido (base o incluido_por_defecto)
+            if ($ingrediente->pivot->modo !== 'base' && ! $ingrediente->pivot->incluido_por_defecto) {
                 $this->fail(
                     "{$quitadoPrefix}.ingredienteId",
                     "El ingrediente «{$ingrediente->nombre}» no viene incluido en este artículo."
