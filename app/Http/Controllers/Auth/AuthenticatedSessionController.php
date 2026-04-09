@@ -43,13 +43,15 @@ class AuthenticatedSessionController extends Controller
         ]);
 
         if (Auth::check()) {
+            if (Auth::user()->role === 'cocina') {
+                return redirect()->route('admin.cocina.index');
+            }
 
             if (Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin') {
                 return redirect()->route('home');
-            } else {
-                return redirect()->route('unidad');
             }
 
+            return redirect()->route('unidad');
         }
 
         return redirect()->route('login');

@@ -35,7 +35,7 @@ class UserController extends Controller
             'name' => 'required|string|max:30',
             'email' => 'required|email|max:30|unique:users',
             'password' => 'required|string|min:8|confirmed',
-            'role' => 'required|in:super_admin,admin,user,guest',
+            'role' => 'required|in:super_admin,admin,cocina,user,guest',
         ]);
 
         // Crear el usuario
@@ -78,7 +78,7 @@ class UserController extends Controller
             'name' => 'required|string|max:30',
             'email' => "required|string|email|max:30|unique:users,email,$id",
             'password' => 'nullable|string|min:8|confirmed',
-            'role' => 'required|in:super_admin,admin,user,guest',
+            'role' => 'required|in:super_admin,admin,cocina,user,guest',
         ]);
 
         // Actualizar el usuario

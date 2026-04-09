@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
 use App\Http\Controllers\Api\Admin\ConfigSonidoController;
+use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\FranjaHorariaController;
 use App\Http\Controllers\Api\Admin\MetodoPagoController;
 use App\Http\Controllers\Api\Pedido\PedidoCocinaController;
@@ -35,6 +36,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::prefix('admin')->group(function () {
+    /* Dashboard */
+    Route::get('dashboard', [DashboardController::class, 'index']);
+
     Route::apiResource('tipos-producto', TipoProductoController::class);
     Route::apiResource('tamanos', TamanoController::class);
     Route::apiResource('categorias-ingredientes', CategoriaIngredienteController::class);

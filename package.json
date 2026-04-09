@@ -47,6 +47,7 @@
         "rater-js": "^1.0.1",
         "react-hot-toast": "^2.6.0",
         "react-router-dom": "^7.13.0",
+        "recharts": "^3.8.1",
         "shepherd.js": "^11.0.1",
         "shufflejs": "^6.1.0",
         "simplebar": "^6.2.5",

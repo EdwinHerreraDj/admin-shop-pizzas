@@ -27,14 +27,22 @@
         <ul class="menu" data-fc-type="accordion">
             <li class="menu-title">Menu</li>
 
-            <li class="menu-item">
-                <a href="{{ route('home') }}" class="menu-link">
-                    <span class="menu-icon"><i class="mgc_home_3_line"></i></span>
-                    <span class="menu-text"> Inicio </span>
-                </a>
-            </li>
-
-
+            @if (Auth::user()->role === 'cocina')
+                {{-- Rol cocina: solo ve el panel de cocina --}}
+                <li class="menu-item">
+                    <a href="{{ route('admin.cocina.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_fire_line"></i></span>
+                        <span class="menu-text"> Pedidos Cocina </span>
+                    </a>
+                </li>
+            @else
+                <li class="menu-item">
+                    <a href="{{ route('home') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_home_3_line"></i></span>
+                        <span class="menu-text"> Inicio </span>
+                    </a>
+                </li>
+            @endif
 
             @if (Auth::user()->role === 'admin' || Auth::user()->role === 'super_admin')
                 <li class="menu-item">

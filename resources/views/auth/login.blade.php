@@ -93,30 +93,8 @@
                             </div>
                         </form>
 
-
-                        <div class="flex gap-4 justify-center mb-6">
-                            <a href="javascript:void(0)" class="btn border-light text-gray-400 dark:border-slate-700">
-                                <span class="flex justify-center items-center gap-2">
-                                    <i class="mgc_github_line text-info text-xl"></i>
-                                    <span class="lg:block hidden">Github</span>
-                                </span>
-                            </a>
-                            <a href="javascript:void(0)" class="btn border-light text-gray-400 dark:border-slate-700">
-                                <span class="flex justify-center items-center gap-2">
-                                    <i class="mgc_google_line text-danger text-xl"></i>
-                                    <span class="lg:block hidden">Google</span>
-                                </span>
-                            </a>
-                            <a href="javascript:void(0)" class="btn border-light text-gray-400 dark:border-slate-700">
-                                <span class="flex justify-center items-center gap-2">
-                                    <i class="mgc_facebook_line text-primary text-xl"></i>
-                                    <span class="lg:block hidden">Facebook</span>
-                                </span>
-                            </a>
-                        </div>
-
-                        <p class="text-gray-500 dark:text-gray-400 text-center">Soporte tecnico ®<a
-                                href="{{ route('register') }}" class="text-primary ms-1"><b>Alminares S.L</b></a>
+                        <p class="text-gray-500 dark:text-gray-400 text-center">® Pizzeria Casa de Campo - <a
+                                href="https://pizzeriacasadecampo.es/" class="text-primary ms-1"><b>Visitar tienda</b></a>
                         </p>
                     </div>
                 </div>

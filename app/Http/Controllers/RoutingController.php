@@ -16,9 +16,7 @@ class RoutingController extends Controller
 
     public function home()
     {
-        $totalUsers = User::count(); // Cuenta los usuarios
-
-        return view('index', compact('totalUsers'));
+        return view('index');
     }
 
 

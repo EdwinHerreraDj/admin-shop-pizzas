@@ -176,6 +176,7 @@
                             <option value="super_admin" {{ old('role') == 'super_admin' ? 'selected' : '' }}>Super Admin
                             </option>
                             <option value="admin" {{ old('role') == 'admin' ? 'selected' : '' }}>Admin</option>
+                            <option value="cocina" {{ old('role') == 'cocina' ? 'selected' : '' }}>Cocina</option>
                             <option value="user" {{ old('role') == 'user' ? 'selected' : '' }}>User</option>
                             <option value="guest" {{ old('role') == 'guest' ? 'selected' : '' }}>Guest</option>
                         </select>
@@ -248,6 +249,7 @@
                             class="mt-1 block w-full border-gray-300 rounded shadow-sm focus:ring-blue-500 focus:border-blue-500">
                             <option value="super_admin">Super Admin</option>
                             <option value="admin">Admin</option>
+                            <option value="cocina">Cocina</option>
                             <option value="user">User</option>
                             <option value="guest">Guest</option>
                         </select>
