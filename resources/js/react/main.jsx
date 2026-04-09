@@ -16,6 +16,8 @@ import OrdenCategorias from "./pages/categorias-articulos/OrdenCategorias";
 import ZonasEnvio from "./pages/zonas-envios/ZonasEnviosIndex";
 import FranjasHorarias from "./pages/franjas-horarias/FranjasHorariasIndex";
 import MetodosPago from "./pages/metodos-pago/MetodosPagoIndex";
+import ConfigSonido from "./pages/config-sonido/ConfigSonidoIndex";
+import QzDiagnostico from "./pages/qz-diagnostico/QzDiagnostico";
 import CocinaIndex from "./pages/cocina/CocinaIndex";
 import GestionPedidosIndex from "./pages/gestion-pedidos/GestionPedidoIndex";
 
@@ -155,6 +157,28 @@ if (zonasEnvioRoot) {
         <>
             <Toaster position="top-right" />
             <ZonasEnvio />
+        </>,
+    );
+}
+
+const configSonidoRoot = document.getElementById("config-sonido-root");
+
+if (configSonidoRoot) {
+    createRoot(configSonidoRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <ConfigSonido />
+        </>,
+    );
+}
+
+const qzDiagnosticoRoot = document.getElementById("qz-diagnostico-root");
+
+if (qzDiagnosticoRoot) {
+    createRoot(qzDiagnosticoRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <QzDiagnostico />
         </>,
     );
 }

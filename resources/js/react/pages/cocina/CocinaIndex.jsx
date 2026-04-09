@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback, useRef } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { imprimirTicketQZ } from "@/react/lib/qzPrinter";
+import { imprimirTicketQZ, conectarQZ } from "@/react/lib/qzPrinter";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constantes
@@ -117,95 +117,12 @@ function esCritico(fechaStr, estado) {
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function imprimirComanda(pedido) {
-    // Intentar impresión térmica vía QZ Tray
     const impreso = await imprimirTicketQZ(pedido);
     if (impreso) {
         toast.success("Ticket enviado a impresora");
-        return;
+    } else {
+        toast.error("No se pudo imprimir. Verifica que QZ Tray esté abierto.");
     }
-
-    // Fallback: ventana del navegador
-    const ventana = window.open("", "_blank", "width=400,height=620");
-
-    // Fix: el navegador puede bloquear popups — fallback con toast
-    if (!ventana) {
-        toast.error(
-            "El navegador bloqueó la ventana de impresión. Permite popups para este sitio.",
-        );
-        return;
-    }
-
-    const ingHtml = (ing) => {
-        const signo = ing.tipo === "extra" ? "+" : "−";
-        const nombre = ing.ingrediente?.nombre ?? `#${ing.ingrediente_id}`;
-        const cant = ing.cantidad > 1 ? ` ×${ing.cantidad}` : "";
-        const mitad = ing.mitad ? ` [mitad ${ing.mitad}]` : "";
-        const tachado =
-            ing.tipo === "quitado"
-                ? "text-decoration:line-through;color:#888;"
-                : "";
-        return `<div style="padding-left:16px;font-size:12px;${tachado}">${signo} ${nombre}${cant}${mitad}</div>`;
-    };
-
-    const itemsHtml = (pedido.items ?? [])
-        .map(
-            (item) => `
-        <div style="margin:6px 0">
-            <div style="font-weight:700;font-size:14px">
-                ${item.cantidad}× ${item.nombre}
-                ${item.tamano ? `<span style="font-weight:400;font-size:12px"> (${item.tamano})</span>` : ""}
-            </div>
-            ${(item.ingredientes ?? []).map(ingHtml).join("")}
-        </div>
-        <div style="border-top:1px dotted #ccc;margin:4px 0"></div>
-    `,
-        )
-        .join("");
-
-    ventana.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8">
-        <title>Comanda ${pedido.codigo}</title>
-        <style>
-            * { margin:0; padding:0; box-sizing:border-box; }
-            body { font-family:'Courier New',monospace; font-size:13px; width:320px; padding:12px; color:#000; }
-            .linea { border-top:1px dashed #000; margin:8px 0; }
-            .fila  { display:flex; justify-content:space-between; font-size:12px; margin:2px 0; }
-            .total { font-size:16px; font-weight:700; }
-            .obs   { border:1px solid #000; padding:6px; margin-top:8px; font-size:12px; }
-            .footer { text-align:center; font-size:11px; margin-top:10px; color:#666; }
-            @media print { .no-print { display:none; } body { width:80mm; } }
-        </style>
-    </head><body>
-        <div style="text-align:center;margin-bottom:10px">
-            <div style="font-size:20px;font-weight:700;letter-spacing:2px">${pedido.codigo}</div>
-            <div style="font-size:11px;margin-top:4px">${new Date(pedido.created_at).toLocaleString("es-ES")}</div>
-        </div>
-        <div class="linea"></div>
-        <div class="fila"><span>Cliente</span><span>${pedido.cliente_nombre}</span></div>
-        <div class="fila"><span>Teléfono</span><span>${pedido.cliente_telefono}</span></div>
-        ${
-            pedido.tipo_entrega === "recogida"
-                ? `<div class="fila" style="font-weight:700;background:#fff3cd;padding:4px 0">
-                <span>⭐ RECOGIDA EN TIENDA</span>
-               </div>`
-                : `<div class="fila"><span>Dirección</span><span style="max-width:180px;text-align:right">${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}</span></div>`
-        }
-        <div class="fila"><span>Pago</span><span>${labelPago(pedido.metodo_pago)}</span></div>
-        ${pedido.hora_deseada ? `<div class="fila" style="font-weight:700;background:#ede9fe;padding:4px 0"><span>🕐 Hora deseada</span><span>${pedido.hora_deseada}</span></div>` : ""}
-        <div class="linea"></div>
-        ${itemsHtml}
-        <div class="linea"></div>
-        <div class="fila"><span>Subtotal</span><span>${Number(pedido.subtotal).toFixed(2)}€</span></div>
-        ${Number(pedido.gastos_envio) > 0 ? `<div class="fila"><span>Envío</span><span>${Number(pedido.gastos_envio).toFixed(2)}€</span></div>` : ""}
-        <div class="fila total"><span>TOTAL</span><span>${Number(pedido.total).toFixed(2)}€</span></div>
-        ${pedido.observaciones ? `<div class="obs">⚠️ ${pedido.observaciones}</div>` : ""}
-        <div class="footer">— Comanda generada automáticamente —</div>
-        <div class="no-print" style="text-align:center;margin-top:12px">
-            <button onclick="window.print()" style="padding:8px 20px;font-size:14px;cursor:pointer">Imprimir</button>
-        </div>
-    </body></html>`);
-
-    ventana.document.close();
-    ventana.onload = () => ventana.print();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -281,6 +198,14 @@ function LineaIngrediente({ ing }) {
 
 function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
     const [confirmCancelar, setConfirmCancelar] = useState(false);
+    const [imprimiendo, setImprimiendo] = useState(false);
+
+    const handleImprimir = async () => {
+        setImprimiendo(true);
+        await imprimirComanda(pedido);
+        setImprimiendo(false);
+    };
+
     const cfg = ESTADOS[pedido.estado] ?? ESTADOS.pendiente;
     const colors = COLOR_CLASSES[cfg.color];
     const siguiente = cfg.siguiente;
@@ -410,11 +335,23 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                 <div className="flex items-center gap-2 pt-2">
                     {/* Imprimir */}
                     <button
-                        onClick={() => imprimirComanda(pedido)}
+                        onClick={handleImprimir}
+                        disabled={imprimiendo}
                         title="Imprimir comanda"
-                        className="h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-2xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-500 transition text-lg active:scale-95"
+                        className={`h-12 w-12 flex-shrink-0 flex items-center justify-center rounded-2xl border transition text-lg active:scale-95 ${
+                            imprimiendo
+                                ? "border-violet-300 bg-violet-50 text-violet-500 animate-pulse"
+                                : "border-slate-200 bg-white hover:bg-slate-50 text-slate-500"
+                        }`}
                     >
-                        <i className="mgc_print_line" />
+                        {imprimiendo ? (
+                            <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24" fill="none">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                        ) : (
+                            <i className="mgc_print_line" />
+                        )}
                     </button>
 
                     {/* Cancelar */}
@@ -546,15 +483,80 @@ export default function CocinaIndex() {
     const pollingRef = useRef(null);
     // Fix #2: evitar peticiones solapadas si una tarda más de 15s
     const cargandoRef = useRef(false);
+    // IDs conocidos para detectar pedidos nuevos
+    const idsConocidosRef = useRef(new Set());
+    const primeraCargaRef = useRef(true);
+    // Configuración de sonido
+    const sonidoConfigRef = useRef({ activo: true, archivo: null });
+    const audioRef = useRef(null);
+
+    // Cargar config de sonido al montar
+    useEffect(() => {
+        axios.get("/api/admin/configuracion/sonido")
+            .then(({ data }) => {
+                sonidoConfigRef.current = {
+                    activo: data.sonido_activo,
+                    archivo: data.tiene_archivo ? `/storage/${data.sonido_archivo}` : null,
+                };
+                // Pre-cargar audio si hay archivo personalizado
+                if (sonidoConfigRef.current.archivo) {
+                    audioRef.current = new Audio(sonidoConfigRef.current.archivo);
+                }
+            })
+            .catch(() => {});
+    }, []);
+
+    // ── Sonido de notificación ───────────────────────────────────────────
+    const reproducirSonido = useCallback(() => {
+        if (!sonidoConfigRef.current.activo) return;
+
+        try {
+            if (audioRef.current) {
+                audioRef.current.currentTime = 0;
+                audioRef.current.play();
+            } else {
+                // Sonido por defecto: ding-ding
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                [0, 0.25].forEach((delay) => {
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.frequency.value = 880;
+                    osc.type = "sine";
+                    gain.gain.setValueAtTime(0.3, ctx.currentTime + delay);
+                    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.2);
+                    osc.start(ctx.currentTime + delay);
+                    osc.stop(ctx.currentTime + delay + 0.2);
+                });
+            }
+        } catch { /* navegador sin audio */ }
+    }, []);
 
     // ── Cargar pedidos ─────────────────────────────────────────────────────
     const cargarPedidos = useCallback(async (silencioso = false) => {
-        if (cargandoRef.current) return; // ya hay una petición en curso
+        if (cargandoRef.current) return;
         cargandoRef.current = true;
         if (!silencioso) setLoading(true);
         try {
             const res = await axios.get("/api/admin/pedidos");
-            setPedidos(res.data);
+            const nuevos = res.data;
+
+            // Detectar pedidos nuevos (no en la primera carga)
+            if (!primeraCargaRef.current) {
+                const nuevosIds = nuevos.map((p) => p.id);
+                const hayNuevos = nuevosIds.some((id) => !idsConocidosRef.current.has(id));
+                if (hayNuevos) {
+                    reproducirSonido();
+                    toast("Nuevo pedido recibido!", { icon: "🔔" });
+                }
+            }
+
+            // Actualizar IDs conocidos
+            idsConocidosRef.current = new Set(nuevos.map((p) => p.id));
+            primeraCargaRef.current = false;
+
+            setPedidos(nuevos);
             setUltimaVez(new Date());
         } catch {
             toast.error("No se pudieron cargar los pedidos");
@@ -562,11 +564,12 @@ export default function CocinaIndex() {
             setLoading(false);
             cargandoRef.current = false;
         }
-    }, []);
+    }, [reproducirSonido]);
 
-    // Carga inicial + polling cada 15s
+    // Carga inicial + polling cada 15s + conexión QZ Tray
     useEffect(() => {
         cargarPedidos();
+        conectarQZ();
         pollingRef.current = setInterval(() => cargarPedidos(true), 15000);
         return () => clearInterval(pollingRef.current);
     }, [cargarPedidos]);

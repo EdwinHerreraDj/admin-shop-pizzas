@@ -4,9 +4,17 @@ import qz from "qz-tray";
 // Configuración
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Nombre exacto de la impresora tal como aparece en Windows.
-// Cambiar si el nombre varía en el equipo.
-const NOMBRE_IMPRESORA = "EPSON TM-T20II Receipt";
+// La impresora se configura desde /admin/qz-diagnostico y se guarda en localStorage.
+// Fallback al nombre por defecto si no hay nada guardado.
+const NOMBRE_IMPRESORA_DEFAULT = "EPSON TM-T20II Receipt";
+
+function getConfigImpresora() {
+    try {
+        const guardada = localStorage.getItem("qz_impresora");
+        if (guardada) return JSON.parse(guardada);
+    } catch { /* ignore */ }
+    return { tipo: "nombre", nombre: NOMBRE_IMPRESORA_DEFAULT };
+}
 
 // Ancho del papel en caracteres (80mm ≈ 48 columnas en fuente estándar)
 const ANCHO = 48;
@@ -15,19 +23,41 @@ const ANCHO = 48;
 // Conexión
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Deshabilitar la firma de certificados para desarrollo.
-// En producción se puede configurar con certificados firmados.
+// URL base de la API (misma que usa Laravel)
+const API_BASE = window.location.origin + "/api";
+
+// Certificado: se obtiene del backend
 qz.security.setCertificatePromise(() =>
-    Promise.resolve(
-        "-----BEGIN CERTIFICATE-----\nMIIBBDCBrAIJAIpW0rmjx0QLMA0GCSqGSIb3DQEBCwUAMBExDzANBgNVBAMMBnF6\ndGVzdDAeFw0yMzAxMDEwMDAwMDBaFw0zMzAxMDEwMDAwMDBaMBExDzANBgNVBAMM\nBnF6dGVzdDAyMA0GCSqGSIb3DQEBAQUAAwIhADAeBhcqhkjOPQIBBggqhkjOPQMB\nBwMHAAQBAAAAATANBgkqhkiG9w0BAQsFAAMCAQAwDQYJKoZIhvcNAQELBQADAgEA\n-----END CERTIFICATE-----",
-    ),
+    fetch(`${API_BASE}/qz/certificate`)
+        .then((r) => {
+            if (!r.ok) throw new Error("No se pudo obtener el certificado QZ");
+            return r.text();
+        }),
 );
+
+// Firma: el backend firma con la clave privada (SHA-512 + RSA)
 qz.security.setSignatureAlgorithm("SHA512");
-qz.security.setSignaturePromise(() => (resolve) => resolve(""));
+qz.security.setSignaturePromise((toSign) => (resolve, reject) => {
+    fetch(`${API_BASE}/qz/sign`, {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "Accept": "text/plain",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]')?.content ?? "",
+        },
+        body: JSON.stringify({ request: toSign }),
+    })
+        .then((r) => {
+            if (!r.ok) throw new Error("Error al firmar request QZ");
+            return r.text();
+        })
+        .then(resolve)
+        .catch(reject);
+});
 
 let conectado = false;
 
-async function conectar() {
+export async function conectarQZ() {
     if (conectado && qz.websocket.isActive()) return true;
 
     try {
@@ -43,15 +73,12 @@ async function conectar() {
     }
 }
 
-/**
- * Comprueba si QZ Tray está disponible sin intentar conectar.
- */
 export function qzDisponible() {
     return conectado && qz.websocket.isActive();
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Helpers de formato ESC/POS
+// Helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ESC = "\x1B";
@@ -63,16 +90,32 @@ const CMD = {
     LEFT: ESC + "a\x00",
     BOLD_ON: ESC + "E\x01",
     BOLD_OFF: ESC + "E\x00",
-    DOUBLE_ON: GS + "!\x11", // doble alto + doble ancho
+    DOUBLE_ON: GS + "!\x11",
     DOUBLE_OFF: GS + "!\x00",
-    CUT: GS + "V\x00", // corte total
-    FEED: ESC + "d\x03", // avanzar 3 líneas
+    CUT: GS + "V\x00",
+    FEED: ESC + "d\x03",
     LINEA: "------------------------------------------------\n",
     LINEA_PUNTOS: "- - - - - - - - - - - - - - - - - - - - - - - -\n",
 };
 
 function eur(n) {
     return Number(n || 0).toFixed(2) + " EUR";
+}
+
+// Reemplaza caracteres especiales por equivalentes ASCII
+function limpiar(texto) {
+    if (!texto) return "";
+    return texto
+        .replace(/á/g, "a").replace(/Á/g, "A")
+        .replace(/é/g, "e").replace(/É/g, "E")
+        .replace(/í/g, "i").replace(/Í/g, "I")
+        .replace(/ó/g, "o").replace(/Ó/g, "O")
+        .replace(/ú/g, "u").replace(/Ú/g, "U")
+        .replace(/ñ/g, "n").replace(/Ñ/g, "N")
+        .replace(/ü/g, "u").replace(/Ü/g, "U")
+        .replace(/¿/g, "?").replace(/¡/g, "!")
+        .replace(/€/g, "EUR")
+        .replace(/º/g, "o").replace(/ª/g, "a");
 }
 
 function fila(izq, der) {
@@ -86,7 +129,7 @@ function centrar(texto) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Generar datos del ticket
+// Generar ticket
 // ─────────────────────────────────────────────────────────────────────────────
 
 const METODO_PAGO_LABEL = {
@@ -98,10 +141,9 @@ const METODO_PAGO_LABEL = {
 function generarTicket(pedido) {
     let t = "";
 
-    // Inicializar impresora
     t += CMD.INIT;
 
-    // ── Cabecera ──────────────────────────────────────────────
+    // Cabecera
     t += CMD.CENTER;
     t += CMD.DOUBLE_ON;
     t += pedido.codigo + "\n";
@@ -110,22 +152,21 @@ function generarTicket(pedido) {
     t += CMD.LEFT;
     t += CMD.LINEA;
 
-    // ── Datos cliente ─────────────────────────────────────────
-    t += fila("Cliente", pedido.cliente_nombre);
-    t += fila("Teléfono", pedido.cliente_telefono);
+    // Datos cliente
+    t += fila("Cliente", limpiar(pedido.cliente_nombre));
+    t += fila("Telefono", pedido.cliente_telefono);
 
     if (pedido.tipo_entrega === "recogida") {
         t += CMD.BOLD_ON;
         t += centrar("*** RECOGIDA EN TIENDA ***");
         t += CMD.BOLD_OFF;
     } else {
-        const dir = `${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}`;
-        t += fila("Dirección", dir.length > 25 ? dir.slice(0, 25) : dir);
+        const dir = limpiar(`${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}`);
+        t += fila("Direccion", dir.length > 25 ? dir.slice(0, 25) : dir);
     }
 
     t += fila("Pago", METODO_PAGO_LABEL[pedido.metodo_pago] ?? pedido.metodo_pago);
 
-    // Hora deseada
     if (pedido.hora_deseada) {
         t += CMD.BOLD_ON;
         t += fila("Hora deseada", pedido.hora_deseada);
@@ -134,35 +175,29 @@ function generarTicket(pedido) {
 
     t += CMD.LINEA;
 
-    // ── Items ─────────────────────────────────────────────────
+    // Items
     for (const item of pedido.items ?? []) {
-        // Nombre del item con precio
         t += CMD.BOLD_ON;
-        const nombre = `${item.cantidad}x ${item.nombre}`;
-        const tamano = item.tamano ? ` (${item.tamano})` : "";
+        const nombre = `${item.cantidad}x ${limpiar(item.nombre)}`;
+        const tamano = item.tamano ? ` (${limpiar(item.tamano)})` : "";
         const precio = eur(item.subtotal);
         const textoItem = nombre + tamano;
 
-        // Si cabe en una línea con el precio
         if (textoItem.length + precio.length + 1 <= ANCHO) {
             t += fila(textoItem, precio);
         } else {
-            // Nombre en una línea, precio en la siguiente alineado a la derecha
             t += textoItem + "\n";
             t += " ".repeat(ANCHO - precio.length) + precio + "\n";
         }
         t += CMD.BOLD_OFF;
 
-        // Precio unitario si cantidad > 1
         if (item.cantidad > 1) {
-            const pu = `  (${eur(item.precio_unitario)} c/u)`;
-            t += pu + "\n";
+            t += `  (${eur(item.precio_unitario)} c/u)\n`;
         }
 
-        // Ingredientes
         for (const ing of item.ingredientes ?? []) {
             const signo = ing.tipo === "extra" ? "+" : "-";
-            const ingNombre = ing.ingrediente?.nombre ?? `#${ing.ingrediente_id}`;
+            const ingNombre = limpiar(ing.ingrediente?.nombre ?? `#${ing.ingrediente_id}`);
             const cant = ing.cantidad > 1 ? ` x${ing.cantidad}` : "";
             const mitad = ing.mitad ? ` [mitad ${ing.mitad}]` : "";
             const ingPrecio = ing.tipo === "extra" && Number(ing.precio) > 0
@@ -176,11 +211,11 @@ function generarTicket(pedido) {
 
     t += CMD.LINEA;
 
-    // ── Totales ───────────────────────────────────────────────
+    // Totales
     t += fila("Subtotal", eur(pedido.subtotal));
 
     if (Number(pedido.gastos_envio) > 0) {
-        t += fila("Envío", eur(pedido.gastos_envio));
+        t += fila("Envio", eur(pedido.gastos_envio));
     }
 
     t += CMD.BOLD_ON;
@@ -189,21 +224,18 @@ function generarTicket(pedido) {
     t += CMD.DOUBLE_OFF;
     t += CMD.BOLD_OFF;
 
-    // ── Observaciones ─────────────────────────────────────────
     if (pedido.observaciones) {
         t += CMD.LINEA;
         t += CMD.BOLD_ON;
-        t += "OBS: " + pedido.observaciones + "\n";
+        t += "OBS: " + limpiar(pedido.observaciones) + "\n";
         t += CMD.BOLD_OFF;
     }
 
-    // ── Footer ────────────────────────────────────────────────
     t += "\n";
     t += CMD.CENTER;
-    t += "-- Comanda generada automáticamente --\n";
+    t += "-- Comanda generada automaticamente --\n";
     t += CMD.LEFT;
 
-    // Avanzar y cortar
     t += CMD.FEED;
     t += CMD.CUT;
 
@@ -211,21 +243,26 @@ function generarTicket(pedido) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Función pública: imprimir ticket de pedido
+// Imprimir
 // ─────────────────────────────────────────────────────────────────────────────
 
-/**
- * Imprime un ticket térmico vía QZ Tray.
- * Retorna true si se imprimió, false si QZ no está disponible.
- */
 export async function imprimirTicketQZ(pedido) {
-    const ok = await conectar();
+    const ok = await conectarQZ();
     if (!ok) return false;
 
     try {
-        const config = qz.configs.create(NOMBRE_IMPRESORA, {
-            encoding: "ISO-8859-15",
-        });
+        const impresora = getConfigImpresora();
+        let config;
+
+        if (impresora.tipo === "ip") {
+            config = qz.configs.create(null, {
+                host: impresora.host,
+                port: impresora.port || 9100,
+            });
+        } else {
+            config = qz.configs.create(impresora.nombre);
+        }
+
         const ticket = generarTicket(pedido);
 
         await qz.print(config, [
@@ -233,7 +270,6 @@ export async function imprimirTicketQZ(pedido) {
                 type: "raw",
                 format: "plain",
                 data: ticket,
-                options: { language: "ESCPOS" },
             },
         ]);
 

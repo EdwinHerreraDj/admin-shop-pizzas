@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\Admin\ArticuloIngredienteController;
 use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
+use App\Http\Controllers\Api\Admin\ConfigSonidoController;
 use App\Http\Controllers\Api\Admin\FranjaHorariaController;
 use App\Http\Controllers\Api\Admin\MetodoPagoController;
 use App\Http\Controllers\Api\Pedido\PedidoCocinaController;
@@ -25,6 +26,7 @@ use App\Http\Controllers\Api\Shop\ZonaEnvioPublicController;
 use App\Http\Controllers\Api\Shop\FranjaHorariaPublicController;
 use App\Http\Controllers\Api\Shop\MetodoPagoPublicController;
 use App\Http\Controllers\Api\Pedido\GestionPedidosController;
+use App\Http\Controllers\Api\QzTrayController;
 
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -111,6 +113,12 @@ Route::prefix('admin')->group(function () {
     Route::get('metodos-pago', [MetodoPagoController::class, 'index']);
     Route::put('metodos-pago/{metodo}', [MetodoPagoController::class, 'update']);
 
+    /* Configuración de sonido */
+    Route::get('configuracion/sonido', [ConfigSonidoController::class, 'show']);
+    Route::put('configuracion/sonido', [ConfigSonidoController::class, 'update']);
+    Route::post('configuracion/sonido/archivo', [ConfigSonidoController::class, 'subirArchivo']);
+    Route::delete('configuracion/sonido/archivo', [ConfigSonidoController::class, 'eliminarArchivo']);
+
     // ── Panel cocina ──────────────────────────────────────────────────────────
     // GET  /api/admin/pedidos                      → lista pedidos activos de cocina
     // PATCH /api/admin/pedidos/{pedido}/estado     → avanza estado (cocina)
@@ -150,3 +158,7 @@ Route::prefix('shop')->group(function () {
     Route::get('/franjas-horarias', [FranjaHorariaPublicController::class, 'index']);
     Route::get('/metodos-pago', [MetodoPagoPublicController::class, 'index']);
 });
+
+// ── QZ Tray (firma segura para impresión) ─────────────────────────────────
+Route::get('/qz/certificate', [QzTrayController::class, 'certificate']);
+Route::post('/qz/sign', [QzTrayController::class, 'sign']);

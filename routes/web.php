@@ -128,6 +128,14 @@ Route::middleware('auth')->group(function () {
         return view('admin.metodos-pago.index');
     })->name('admin.metodos-pago.index');
 
+    Route::get('/admin/config-sonido', function () {
+        return view('admin.config-sonido.index');
+    })->name('admin.config-sonido.index');
+
+    Route::get('/admin/qz-diagnostico', function () {
+        return view('admin.qz-diagnostico.index');
+    })->name('admin.qz-diagnostico.index');
+
     /*
 |--------------------------------------------------------------------------
 | ADMIN - CATEGORÍAS DE ARTÍCULOS
