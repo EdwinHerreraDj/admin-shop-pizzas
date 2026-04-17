@@ -489,6 +489,13 @@ export default function CocinaIndex() {
     // Configuración de sonido
     const sonidoConfigRef = useRef({ activo: true, archivo: null });
     const audioRef = useRef(null);
+    // Loop de sonido mientras haya pedidos pendientes (no aceptados)
+    const sonidoLoopRef = useRef(null);
+    const [silenciado, setSilenciado] = useState(false);
+    const silenciadoRef = useRef(false);
+    useEffect(() => {
+        silenciadoRef.current = silenciado;
+    }, [silenciado]);
 
     // Cargar config de sonido al montar
     useEffect(() => {
@@ -509,6 +516,7 @@ export default function CocinaIndex() {
     // ── Sonido de notificación ───────────────────────────────────────────
     const reproducirSonido = useCallback(() => {
         if (!sonidoConfigRef.current.activo) return;
+        if (silenciadoRef.current) return;
 
         try {
             if (audioRef.current) {
@@ -533,6 +541,26 @@ export default function CocinaIndex() {
         } catch { /* navegador sin audio */ }
     }, []);
 
+    // ── Loop de sonido: suena cada 3s mientras haya pedidos pendientes ──
+    const iniciarLoopSonido = useCallback(() => {
+        if (sonidoLoopRef.current) return;
+        reproducirSonido();
+        sonidoLoopRef.current = setInterval(() => {
+            reproducirSonido();
+        }, 3000);
+    }, [reproducirSonido]);
+
+    const detenerLoopSonido = useCallback(() => {
+        if (sonidoLoopRef.current) {
+            clearInterval(sonidoLoopRef.current);
+            sonidoLoopRef.current = null;
+        }
+        if (audioRef.current) {
+            audioRef.current.pause();
+            audioRef.current.currentTime = 0;
+        }
+    }, []);
+
     // ── Cargar pedidos ─────────────────────────────────────────────────────
     const cargarPedidos = useCallback(async (silencioso = false) => {
         if (cargandoRef.current) return;
@@ -547,7 +575,9 @@ export default function CocinaIndex() {
                 const nuevosIds = nuevos.map((p) => p.id);
                 const hayNuevos = nuevosIds.some((id) => !idsConocidosRef.current.has(id));
                 if (hayNuevos) {
-                    reproducirSonido();
+                    // Un pedido nuevo quita el silenciado: vuelve a sonar
+                    silenciadoRef.current = false;
+                    setSilenciado(false);
                     toast("Nuevo pedido recibido!", { icon: "🔔" });
                 }
             }
@@ -558,21 +588,32 @@ export default function CocinaIndex() {
 
             setPedidos(nuevos);
             setUltimaVez(new Date());
+
+            // Loop de sonido mientras haya pedidos pendientes y no este silenciado
+            const hayPendientes = nuevos.some((p) => p.estado === "pendiente");
+            if (hayPendientes && !silenciadoRef.current) {
+                iniciarLoopSonido();
+            } else {
+                detenerLoopSonido();
+            }
         } catch {
             toast.error("No se pudieron cargar los pedidos");
         } finally {
             setLoading(false);
             cargandoRef.current = false;
         }
-    }, [reproducirSonido]);
+    }, [iniciarLoopSonido, detenerLoopSonido]);
 
     // Carga inicial + polling cada 15s + conexión QZ Tray
     useEffect(() => {
         cargarPedidos();
         conectarQZ();
         pollingRef.current = setInterval(() => cargarPedidos(true), 15000);
-        return () => clearInterval(pollingRef.current);
-    }, [cargarPedidos]);
+        return () => {
+            clearInterval(pollingRef.current);
+            detenerLoopSonido();
+        };
+    }, [cargarPedidos, detenerLoopSonido]);
 
     // ── Cambiar estado ─────────────────────────────────────────────────────
     const cambiarEstado = useCallback(async (pedidoId, nuevoEstado) => {
@@ -585,13 +626,19 @@ export default function CocinaIndex() {
                 },
             );
             const actualizado = res.data.pedido;
-            if (nuevoEstado === "entregado" || nuevoEstado === "cancelado") {
-                setPedidos((prev) => prev.filter((p) => p.id !== pedidoId));
-            } else {
-                setPedidos((prev) =>
-                    prev.map((p) => (p.id === pedidoId ? actualizado : p)),
+            setPedidos((prev) => {
+                const siguiente =
+                    nuevoEstado === "entregado" || nuevoEstado === "cancelado"
+                        ? prev.filter((p) => p.id !== pedidoId)
+                        : prev.map((p) => (p.id === pedidoId ? actualizado : p));
+                const quedanPendientes = siguiente.some(
+                    (p) => p.estado === "pendiente",
                 );
-            }
+                if (!quedanPendientes) {
+                    detenerLoopSonido();
+                }
+                return siguiente;
+            });
             toast.success(`Pedido → ${ESTADOS[nuevoEstado]?.label}`);
         } catch (e) {
             toast.error(
@@ -600,7 +647,7 @@ export default function CocinaIndex() {
         } finally {
             setCargandoId(null);
         }
-    }, []);
+    }, [detenerLoopSonido]);
 
     // ── Agrupar por columna ────────────────────────────────────────────────
     const porEstado = COLUMNAS.reduce((acc, estado) => {
@@ -614,6 +661,21 @@ export default function CocinaIndex() {
     const totalActivos = pedidos.filter((p) =>
         COLUMNAS.includes(p.estado),
     ).length;
+
+    const hayPendientes = pedidos.some((p) => p.estado === "pendiente");
+
+    const toggleSilenciado = () => {
+        setSilenciado((prev) => {
+            const nuevo = !prev;
+            silenciadoRef.current = nuevo;
+            if (nuevo) {
+                detenerLoopSonido();
+            } else if (hayPendientes) {
+                iniciarLoopSonido();
+            }
+            return nuevo;
+        });
+    };
 
     // ─────────────────────────────────────────────────────────────────────
     return (
@@ -643,14 +705,40 @@ export default function CocinaIndex() {
                         </div>
                     </div>
 
-                    <button
-                        onClick={() => cargarPedidos()}
-                        disabled={loading}
-                        className="inline-flex items-center gap-2 h-10 px-5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition disabled:opacity-50"
-                    >
-                        <i className="mgc_refresh_2_line text-lg" />
-                        Actualizar
-                    </button>
+                    <div className="flex items-center gap-2">
+                        {hayPendientes && (
+                            <button
+                                onClick={toggleSilenciado}
+                                className={`inline-flex items-center gap-2 h-10 px-5 rounded-xl border text-sm font-medium shadow-sm transition ${
+                                    silenciado
+                                        ? "border-slate-200 bg-slate-100 text-slate-600 hover:bg-slate-200"
+                                        : "border-amber-300 bg-amber-50 text-amber-700 hover:bg-amber-100 animate-pulse"
+                                }`}
+                                title={
+                                    silenciado
+                                        ? "Reactivar sonido"
+                                        : "Silenciar hasta el proximo pedido"
+                                }
+                            >
+                                <i
+                                    className={
+                                        silenciado
+                                            ? "mgc_volume_off_line text-lg"
+                                            : "mgc_volume_line text-lg"
+                                    }
+                                />
+                                {silenciado ? "Silenciado" : "Silenciar"}
+                            </button>
+                        )}
+                        <button
+                            onClick={() => cargarPedidos()}
+                            disabled={loading}
+                            className="inline-flex items-center gap-2 h-10 px-5 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-medium shadow-sm hover:bg-gray-50 transition disabled:opacity-50"
+                        >
+                            <i className="mgc_refresh_2_line text-lg" />
+                            Actualizar
+                        </button>
+                    </div>
                 </div>
             </div>
 
