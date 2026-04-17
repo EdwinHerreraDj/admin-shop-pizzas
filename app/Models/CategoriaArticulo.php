@@ -13,11 +13,13 @@ class CategoriaArticulo extends Model
         'nombre',
         'orden',
         'activo',
+        'es_comida',
     ];
 
     protected $casts = [
         'orden' => 'integer',
         'activo' => 'boolean',
+        'es_comida' => 'boolean',
     ];
 
     public function articulos(): BelongsToMany

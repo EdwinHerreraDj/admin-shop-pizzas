@@ -20,9 +20,10 @@ class CategoriaArticuloController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'orden'  => 'nullable|integer',
-            'activo' => 'required|boolean',
+            'nombre'    => 'required|string|max:255',
+            'orden'     => 'nullable|integer',
+            'activo'    => 'required|boolean',
+            'es_comida' => 'required|boolean',
         ]);
 
         return CategoriaArticulo::create($data);
@@ -31,9 +32,10 @@ class CategoriaArticuloController extends Controller
     public function update(Request $request, CategoriaArticulo $categoriaArticulo)
     {
         $data = $request->validate([
-            'nombre' => 'required|string|max:255',
-            'orden'  => 'nullable|integer',
-            'activo' => 'required|boolean',
+            'nombre'    => 'required|string|max:255',
+            'orden'     => 'nullable|integer',
+            'activo'    => 'required|boolean',
+            'es_comida' => 'required|boolean',
         ]);
 
         $categoriaArticulo->update($data);

@@ -21,6 +21,7 @@ import QzDiagnostico from "./pages/qz-diagnostico/QzDiagnostico";
 import DashboardIndex from "./pages/dashboard/DashboardIndex";
 import CocinaIndex from "./pages/cocina/CocinaIndex";
 import GestionPedidosIndex from "./pages/gestion-pedidos/GestionPedidoIndex";
+import PasarelaPagoIndex from "./pages/pasarela-pago/PasarelaPagoIndex";
 
 /* =========================
    INGREDIENTES
@@ -235,6 +236,17 @@ if (gestionPedidosRoot) {
         <>
             <Toaster position="top-right" />
             <GestionPedidosIndex />
+        </>,
+    );
+}
+
+const pasarelaPagoRoot = document.getElementById("pasarela-pago-root");
+
+if (pasarelaPagoRoot) {
+    createRoot(pasarelaPagoRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <PasarelaPagoIndex />
         </>,
     );
 }

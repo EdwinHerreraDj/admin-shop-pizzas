@@ -36,7 +36,7 @@ class ArticuloPublicController extends Controller
 
             ->with([
                 'tipoProducto:id,nombre',
-                'categorias:id,nombre',
+                'categorias:id,nombre,es_comida',
                 'precios.tamano:id,nombre'
             ]);
 

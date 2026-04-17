@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\Admin\ArticuloCategoriaController;
 use App\Http\Controllers\Api\Admin\CategoriaArticuloController;
 use App\Http\Controllers\Api\Admin\ZonaEnvioController;
 use App\Http\Controllers\Api\Admin\ConfigSonidoController;
+use App\Http\Controllers\Api\Admin\PasarelaConfigController;
 use App\Http\Controllers\Api\Admin\DashboardController;
 use App\Http\Controllers\Api\Admin\FranjaHorariaController;
 use App\Http\Controllers\Api\Admin\MetodoPagoController;
@@ -122,6 +123,11 @@ Route::prefix('admin')->group(function () {
     Route::put('configuracion/sonido', [ConfigSonidoController::class, 'update']);
     Route::post('configuracion/sonido/archivo', [ConfigSonidoController::class, 'subirArchivo']);
     Route::delete('configuracion/sonido/archivo', [ConfigSonidoController::class, 'eliminarArchivo']);
+
+    /* Configuración de pasarela de pago (Redsys) */
+    Route::get('configuracion/pasarela', [PasarelaConfigController::class, 'show']);
+    Route::put('configuracion/pasarela', [PasarelaConfigController::class, 'update']);
+    Route::post('configuracion/pasarela/test', [PasarelaConfigController::class, 'test']);
 
     // ── Panel cocina ──────────────────────────────────────────────────────────
     // GET  /api/admin/pedidos                      → lista pedidos activos de cocina

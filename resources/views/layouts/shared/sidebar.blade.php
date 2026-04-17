@@ -149,6 +149,13 @@
                 </li>
 
                 <li class="menu-item">
+                    <a href="{{ route('admin.pasarela-pago.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_safe_box_line"></i></span>
+                        <span class="menu-text"> Pasarela de pago </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
                     <a href="{{ route('admin.config-sonido.index') }}" class="menu-link">
                         <span class="menu-icon"><i class="mgc_notification_line"></i></span>
                         <span class="menu-text"> Sonido de alerta </span>

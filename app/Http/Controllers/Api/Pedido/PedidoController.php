@@ -142,10 +142,14 @@ class PedidoController extends Controller
             ]);
 
             foreach ($carrito['items'] as $itemData) {
+                $esMitades = !empty($itemData['es_mitades']);
+
                 $item = PedidoItem::create([
                     'pedido_id'       => $pedido->id,
                     'articulo_id'     => $itemData['articulo_id'],
                     'nombre'          => $itemData['nombre'],
+                    'nombre_mitad_a'  => $esMitades ? ($itemData['mitad_a']['nombre'] ?? null) : null,
+                    'nombre_mitad_b'  => $esMitades ? ($itemData['mitad_b']['nombre'] ?? null) : null,
                     'tamano'          => $itemData['tamano'],
                     'cantidad'        => $itemData['cantidad'],
                     'precio_base'     => $itemData['precio_base'],

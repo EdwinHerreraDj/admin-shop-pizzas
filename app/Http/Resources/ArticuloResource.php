@@ -17,6 +17,7 @@ class ArticuloResource extends JsonResource
                 ? asset('storage/' . $this->imagen)
                 : null,
             'personalizable' => $this->personalizable,
+            'esComida' => $this->categorias->contains('es_comida', true),
             'tamanos' => $this->precios->map(fn($p) => [
                 'id' => $p->tamano->id,
                 'nombre' => $p->tamano->nombre,

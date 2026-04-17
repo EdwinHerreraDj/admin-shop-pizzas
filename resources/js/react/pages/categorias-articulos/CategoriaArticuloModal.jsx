@@ -8,6 +8,7 @@ export default function CategoriaArticuloModal({ item, onClose, onSaved }) {
     const [nombre, setNombre] = useState("");
     const [orden, setOrden] = useState(0);
     const [activo, setActivo] = useState(true);
+    const [esComida, setEsComida] = useState(true);
     const [saving, setSaving] = useState(false);
 
     useEffect(() => {
@@ -15,10 +16,12 @@ export default function CategoriaArticuloModal({ item, onClose, onSaved }) {
             setNombre(item.nombre ?? "");
             setOrden(item.orden ?? 0);
             setActivo(Boolean(item.activo));
+            setEsComida(item.es_comida !== undefined ? Boolean(item.es_comida) : true);
         } else {
             setNombre("");
             setOrden(0);
             setActivo(true);
+            setEsComida(true);
         }
     }, [item]);
 
@@ -36,6 +39,7 @@ export default function CategoriaArticuloModal({ item, onClose, onSaved }) {
             nombre: nombre.trim(),
             orden: orden === "" ? 0 : Number(orden),
             activo,
+            es_comida: esComida,
         };
 
         try {
@@ -171,7 +175,7 @@ export default function CategoriaArticuloModal({ item, onClose, onSaved }) {
                         />
                     </div>
 
-                    {/* SWITCH PREMIUM (mejor que checkbox visualmente) */}
+                    {/* SWITCH — Categoría activa */}
                     <div
                         className="
                     flex items-center justify-between
@@ -203,6 +207,43 @@ export default function CategoriaArticuloModal({ item, onClose, onSaved }) {
                             w-5 h-5 bg-white rounded-full
                             shadow-md transition
                             ${activo ? "translate-x-5" : ""}
+                        `}
+                            />
+                        </button>
+                    </div>
+
+                    {/* SWITCH — Tipo: Comida / Bebida */}
+                    <div
+                        className="
+                    flex items-center justify-between
+                    rounded-2xl
+                    border border-gray-200
+                    p-4
+                    bg-gradient-to-r from-gray-50 to-white
+                "
+                    >
+                        <div>
+                            <div className="text-sm font-semibold text-gray-800">
+                                {esComida ? "Comida" : "Bebida"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                                Los pedidos deben incluir al menos un artículo de comida
+                            </div>
+                        </div>
+
+                        <button
+                            onClick={() => setEsComida(!esComida)}
+                            className={`
+                        relative w-12 h-7 rounded-full transition shadow-inner
+                        ${esComida ? "bg-emerald-500" : "bg-amber-500"}
+                    `}
+                        >
+                            <span
+                                className={`
+                            absolute top-1 left-1
+                            w-5 h-5 bg-white rounded-full
+                            shadow-md transition
+                            ${esComida ? "translate-x-5" : ""}
                         `}
                             />
                         </button>

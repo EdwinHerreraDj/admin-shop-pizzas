@@ -132,6 +132,10 @@ Route::middleware('auth')->group(function () {
         return view('admin.config-sonido.index');
     })->name('admin.config-sonido.index');
 
+    Route::get('/admin/pasarela-pago', function () {
+        return view('admin.pasarela-pago.index');
+    })->name('admin.pasarela-pago.index');
+
     Route::get('/admin/qz-diagnostico', function () {
         return view('admin.qz-diagnostico.index');
     })->name('admin.qz-diagnostico.index');

@@ -22,7 +22,7 @@ class StorePedidoRequest extends FormRequest
             // ── Cliente ───────────────────────────────────────────────────
             'cliente'                   => ['required', 'array'],
             'cliente.nombre'            => ['required', 'string', 'max:255'],
-            'cliente.telefono'          => ['required', 'string', 'max:20'],
+            'cliente.telefono'          => ['required', 'string', 'regex:/^\d{9}$/'],
 
             // En recogida dirección y CP son opcionales
             'cliente.direccion'         => [$esRecogida ? 'nullable' : 'required', 'string', 'max:500'],
@@ -86,6 +86,7 @@ class StorePedidoRequest extends FormRequest
             'tipo_entrega.in'                   => 'El tipo de entrega no es válido.',
             'cliente.nombre.required'           => 'El nombre del cliente es obligatorio.',
             'cliente.telefono.required'         => 'El teléfono del cliente es obligatorio.',
+            'cliente.telefono.regex'            => 'El teléfono debe tener exactamente 9 dígitos.',
             'cliente.direccion.required'        => 'La dirección es obligatoria para envío a domicilio.',
             'cliente.codigo_postal.required'    => 'El código postal es obligatorio para envío a domicilio.',
             'cliente.barrio.required'           => 'Debes seleccionar el barrio para calcular los gastos de envío.',

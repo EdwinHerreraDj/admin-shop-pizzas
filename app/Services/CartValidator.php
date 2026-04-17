@@ -26,8 +26,9 @@ class CartValidator
             $this->fail('items', 'El carrito está vacío.');
         }
 
-        $validated = [];
+        $validated  = [];
         $subtotal   = 0;
+        $tieneComida = false;
 
         foreach ($items as $index => $item) {
             $prefix = "items.{$index}";
@@ -42,7 +43,9 @@ class CartValidator
             }
 
             if ($esMitades) {
-                // Las mitades no tienen articuloId en la raíz del item
+                // Las mitades son siempre comida
+                $tieneComida = true;
+
                 $itemCalculado = $this->procesarMitades(
                     $item,
                     $prefix,
@@ -64,6 +67,13 @@ class CartValidator
                     $this->fail("{$prefix}.articuloId", "El artículo «{$articulo->nombre}» no está disponible.");
                 }
 
+                // Comprobar si el artículo es comida
+                if (! $tieneComida) {
+                    $tieneComida = $articulo->categorias()
+                        ->where('es_comida', true)
+                        ->exists();
+                }
+
                 $itemCalculado = $this->procesarArticuloSimple(
                     $articulo,
                     $item,
@@ -74,6 +84,10 @@ class CartValidator
 
             $subtotal   += $itemCalculado['subtotal'];
             $validated[] = $itemCalculado;
+        }
+
+        if (! $tieneComida) {
+            $this->fail('items', 'El pedido debe incluir al menos un artículo de comida.');
         }
 
         return [

@@ -196,6 +196,7 @@ export default function CategoriasArticulosIndex() {
                                 <th className="px-7 py-4 w-[90px]">ID</th>
                                 <th className="px-7 py-4">Nombre</th>
                                 <th className="px-7 py-4 w-[120px]">Orden</th>
+                                <th className="px-7 py-4 w-[120px]">Tipo</th>
                                 <th className="px-7 py-4 w-[150px]">Estado</th>
                                 <th className="px-7 py-4 text-right w-[180px]">
                                     Acciones
@@ -208,7 +209,7 @@ export default function CategoriasArticulosIndex() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan="6"
                                         className="px-7 py-14 text-center text-gray-400"
                                     >
                                         Cargando…
@@ -217,7 +218,7 @@ export default function CategoriasArticulosIndex() {
                             ) : items.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="5"
+                                        colSpan="6"
                                         className="px-7 py-14 text-center text-gray-400"
                                     >
                                         No hay categorías registradas
@@ -248,6 +249,27 @@ export default function CategoriasArticulosIndex() {
                                         {/* Orden */}
                                         <td className="px-7 py-5 text-gray-600">
                                             {row.orden ?? "—"}
+                                        </td>
+
+                                        {/* Tipo */}
+                                        <td className="px-7 py-5">
+                                            <span
+                                                className={`
+                                            inline-flex items-center
+                                            px-3 py-1
+                                            rounded-full
+                                            text-xs font-semibold
+                                            ${
+                                                row.es_comida !== false
+                                                    ? "bg-emerald-100 text-emerald-700"
+                                                    : "bg-amber-100 text-amber-700"
+                                            }
+                                        `}
+                                            >
+                                                {row.es_comida !== false
+                                                    ? "Comida"
+                                                    : "Bebida"}
+                                            </span>
                                         </td>
 
                                         {/* Estado */}
