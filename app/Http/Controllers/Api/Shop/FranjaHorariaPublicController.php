@@ -53,4 +53,33 @@ class FranjaHorariaPublicController extends Controller
             'slots'      => array_values(array_unique($slots)),
         ]);
     }
+
+    /**
+     * Devuelve el horario semanal agrupado por día.
+     * Ideal para mostrar en el footer.
+     */
+    public function semanal()
+    {
+        $franjas = FranjaHoraria::activas()
+            ->orderBy('dia_semana')
+            ->orderBy('hora_apertura')
+            ->get();
+
+        $horario = [];
+        foreach (FranjaHoraria::DIAS as $diaIdx => $diaNombre) {
+            $delDia = $franjas->where('dia_semana', $diaIdx);
+
+            $horario[] = [
+                'dia_semana' => $diaIdx,
+                'dia_nombre' => $diaNombre,
+                'cerrado'    => $delDia->isEmpty(),
+                'franjas'    => $delDia->map(fn ($f) => [
+                    'apertura' => substr($f->hora_apertura, 0, 5),
+                    'cierre'   => substr($f->hora_cierre, 0, 5),
+                ])->values(),
+            ];
+        }
+
+        return response()->json($horario);
+    }
 }

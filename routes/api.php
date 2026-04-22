@@ -27,6 +27,15 @@ use App\Http\Controllers\Api\Shop\PizzasExistentesController;
 use App\Http\Controllers\Api\Shop\ZonaEnvioPublicController;
 use App\Http\Controllers\Api\Shop\FranjaHorariaPublicController;
 use App\Http\Controllers\Api\Shop\MetodoPagoPublicController;
+use App\Http\Controllers\Api\Shop\EstadoTiendaPublicController;
+use App\Http\Controllers\Api\Admin\EstadoTiendaController;
+use App\Http\Controllers\Api\Shop\CardsInfoPublicController;
+use App\Http\Controllers\Api\Admin\CardsInfoController;
+use App\Http\Controllers\Api\Shop\PaginaLegalPublicController;
+use App\Http\Controllers\Api\Admin\PaginaLegalController;
+use App\Http\Controllers\Api\Shop\EmpresaPublicController;
+use App\Http\Controllers\Api\Admin\EmpresaController;
+use App\Http\Controllers\Api\Shop\RedsysController;
 use App\Http\Controllers\Api\Pedido\GestionPedidosController;
 use App\Http\Controllers\Api\QzTrayController;
 
@@ -129,6 +138,25 @@ Route::prefix('admin')->group(function () {
     Route::put('configuracion/pasarela', [PasarelaConfigController::class, 'update']);
     Route::post('configuracion/pasarela/test', [PasarelaConfigController::class, 'test']);
 
+    /* Estado de la tienda (abierta/cerrada) */
+    Route::get('configuracion/estado-tienda', [EstadoTiendaController::class, 'show']);
+    Route::put('configuracion/estado-tienda', [EstadoTiendaController::class, 'update']);
+
+    /* Cards informativas (antes del footer) */
+    Route::get('configuracion/cards-info', [CardsInfoController::class, 'show']);
+    Route::put('configuracion/cards-info', [CardsInfoController::class, 'update']);
+
+    /* Información de la empresa (contacto, dirección, redes, google maps) */
+    Route::get('configuracion/empresa', [EmpresaController::class, 'show']);
+    Route::put('configuracion/empresa', [EmpresaController::class, 'update']);
+
+    /* Páginas legales (Términos, Privacidad, Cookies, Aviso Legal, Devoluciones...) */
+    Route::get('paginas-legales', [PaginaLegalController::class, 'index']);
+    Route::post('paginas-legales', [PaginaLegalController::class, 'store']);
+    Route::get('paginas-legales/{paginaLegal}', [PaginaLegalController::class, 'show']);
+    Route::put('paginas-legales/{paginaLegal}', [PaginaLegalController::class, 'update']);
+    Route::delete('paginas-legales/{paginaLegal}', [PaginaLegalController::class, 'destroy']);
+
     // ── Panel cocina ──────────────────────────────────────────────────────────
     // GET  /api/admin/pedidos                      → lista pedidos activos de cocina
     // PATCH /api/admin/pedidos/{pedido}/estado     → avanza estado (cocina)
@@ -153,20 +181,46 @@ Route::prefix('admin')->group(function () {
 
 
 Route::prefix('shop')->group(function () {
-    Route::get('/articulos', [ArticuloPublicController::class, 'index']);
-    Route::get('/categorias', [CategoriaPublicController::class, 'index']);
-    Route::get('/articulos/{articulo}', [ArticuloPublicController::class, 'show']);
-    Route::get('/pizza-plantilla', [PizzaPlantillaController::class, 'show']);
-    Route::get('/pizzas-existentes', [PizzasExistentesController::class, 'pizzasExistentes']);
+    // ── Estado de la tienda (siempre accesible) ──────────────────────────────
+    Route::get('/estado-tienda', [EstadoTiendaPublicController::class, 'show']);
 
-    // ── Pedidos (tienda pública) ───────────────────────────────────────────────
-    // POST /api/shop/pedidos              → cliente crea pedido
-    // GET  /api/shop/pedidos/{codigo}     → tracking del cliente
-    Route::post('/pedidos', [PedidoController::class, 'store']);
+    // ── Cards informativas (siempre accesibles) ──────────────────────────────
+    Route::get('/cards-info', [CardsInfoPublicController::class, 'show']);
+
+    // ── Páginas legales (siempre accesibles) ─────────────────────────────────
+    Route::get('/paginas-legales', [PaginaLegalPublicController::class, 'index']);
+    Route::get('/paginas-legales/{slug}', [PaginaLegalPublicController::class, 'show']);
+
+    // ── Horario semanal (siempre accesible, para el footer) ──────────────────
+    Route::get('/horario-semanal', [FranjaHorariaPublicController::class, 'semanal']);
+
+    // ── Info de empresa (contacto, dirección, maps) ──────────────────────────
+    Route::get('/empresa', [EmpresaPublicController::class, 'show']);
+
+    // ── Endpoints bloqueados si la tienda está cerrada ──────────────────────
+    Route::middleware('tienda.abierta')->group(function () {
+        Route::get('/articulos', [ArticuloPublicController::class, 'index']);
+        Route::get('/categorias', [CategoriaPublicController::class, 'index']);
+        Route::get('/articulos/{articulo}', [ArticuloPublicController::class, 'show']);
+        Route::get('/pizza-plantilla', [PizzaPlantillaController::class, 'show']);
+        Route::get('/pizzas-existentes', [PizzasExistentesController::class, 'pizzasExistentes']);
+
+        // Crear pedido (no se permite si la tienda está cerrada)
+        Route::post('/pedidos', [PedidoController::class, 'store']);
+    });
+
+    // ── Tracking y pago: accesibles aunque la tienda cierre ─────────────────
+    // (el cliente ya tiene un pedido en curso, debe poder seguirlo y pagarlo)
     Route::get('/pedidos/{codigo}', [PedidoController::class, 'show']);
     Route::get('/zonas-envio', [ZonaEnvioPublicController::class, 'index']);
     Route::get('/franjas-horarias', [FranjaHorariaPublicController::class, 'index']);
     Route::get('/metodos-pago', [MetodoPagoPublicController::class, 'index']);
+
+    // ── Redsys (pago con tarjeta) ─────────────────────────────────────────────
+    Route::post('/pedidos/{codigo}/redsys/iniciar', [RedsysController::class, 'iniciar']);
+    Route::get('/pedidos/{codigo}/pago-estado', [RedsysController::class, 'estadoPago']);
+    Route::post('/redsys/notificacion', [RedsysController::class, 'notificacion'])
+        ->name('shop.redsys.notificacion');
 });
 
 // ── QZ Tray (firma segura para impresión) ─────────────────────────────────

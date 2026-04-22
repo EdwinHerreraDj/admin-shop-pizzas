@@ -95,6 +95,7 @@ class ArticuloPublicController extends Controller
                 ]);
             },
             'ingredientes.categoria:id,nombre',
+            'categorias:id,es_comida',
         ]);
 
         $tipoProductoId = $articulo->tipo_producto_id;
@@ -145,6 +146,7 @@ class ArticuloPublicController extends Controller
             'descripcion' => $articulo->descripcion,
             'imagen' => $articulo->imagen_url,
             'personalizable' => $articulo->personalizable,
+            'esComida' => $articulo->categorias->contains('es_comida', true),
             'tamanos' => $tamanos,
             'ingredientes' => $ingredientes,
         ]);

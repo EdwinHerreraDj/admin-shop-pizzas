@@ -156,6 +156,34 @@
                 </li>
 
                 <li class="menu-item">
+                    <a href="{{ route('admin.estado-tienda.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_store_line"></i></span>
+                        <span class="menu-text"> Estado de la tienda </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{ route('admin.cards-info.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_layout_3_line"></i></span>
+                        <span class="menu-text"> Info en tienda </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{ route('admin.paginas-legales.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_file_2_line"></i></span>
+                        <span class="menu-text"> Páginas legales </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
+                    <a href="{{ route('admin.empresa.index') }}" class="menu-link">
+                        <span class="menu-icon"><i class="mgc_building_3_line"></i></span>
+                        <span class="menu-text"> Info de empresa </span>
+                    </a>
+                </li>
+
+                <li class="menu-item">
                     <a href="{{ route('admin.config-sonido.index') }}" class="menu-link">
                         <span class="menu-icon"><i class="mgc_notification_line"></i></span>
                         <span class="menu-text"> Sonido de alerta </span>

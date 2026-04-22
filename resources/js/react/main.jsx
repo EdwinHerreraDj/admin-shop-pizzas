@@ -22,6 +22,10 @@ import DashboardIndex from "./pages/dashboard/DashboardIndex";
 import CocinaIndex from "./pages/cocina/CocinaIndex";
 import GestionPedidosIndex from "./pages/gestion-pedidos/GestionPedidoIndex";
 import PasarelaPagoIndex from "./pages/pasarela-pago/PasarelaPagoIndex";
+import EstadoTiendaIndex from "./pages/estado-tienda/EstadoTiendaIndex";
+import CardsInfoIndex from "./pages/cards-info/CardsInfoIndex";
+import PaginasLegalesIndex from "./pages/paginas-legales/PaginasLegalesIndex";
+import EmpresaIndex from "./pages/empresa/EmpresaIndex";
 
 /* =========================
    INGREDIENTES
@@ -247,6 +251,50 @@ if (pasarelaPagoRoot) {
         <>
             <Toaster position="top-right" />
             <PasarelaPagoIndex />
+        </>,
+    );
+}
+
+const estadoTiendaRoot = document.getElementById("estado-tienda-root");
+
+if (estadoTiendaRoot) {
+    createRoot(estadoTiendaRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <EstadoTiendaIndex />
+        </>,
+    );
+}
+
+const cardsInfoRoot = document.getElementById("cards-info-root");
+
+if (cardsInfoRoot) {
+    createRoot(cardsInfoRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <CardsInfoIndex />
+        </>,
+    );
+}
+
+const paginasLegalesRoot = document.getElementById("paginas-legales-root");
+
+if (paginasLegalesRoot) {
+    createRoot(paginasLegalesRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <PaginasLegalesIndex />
+        </>,
+    );
+}
+
+const empresaRoot = document.getElementById("empresa-root");
+
+if (empresaRoot) {
+    createRoot(empresaRoot).render(
+        <>
+            <Toaster position="top-right" />
+            <EmpresaIndex />
         </>,
     );
 }

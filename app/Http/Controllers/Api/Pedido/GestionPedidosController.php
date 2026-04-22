@@ -13,6 +13,7 @@ class GestionPedidosController extends Controller
 {
     // Todos los estados — el jefe ve todo
     private const TODOS_ESTADOS = [
+        'pendiente_pago',
         'pendiente',
         'aceptado',
         'en_preparacion',

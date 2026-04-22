@@ -11,6 +11,7 @@ use App\Models\FranjaHoraria;
 use App\Models\MetodoPago;
 use App\Models\ZonaEnvio;
 use App\Services\CartValidator;
+use App\Services\RedsysService;
 use Carbon\Carbon;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -18,7 +19,10 @@ use Illuminate\Support\Str;
 
 class PedidoController extends Controller
 {
-    public function __construct(private CartValidator $cartValidator) {}
+    public function __construct(
+        private CartValidator $cartValidator,
+        private RedsysService $redsys,
+    ) {}
 
     // ─────────────────────────────────────────────────────────────────────────
     // POST /api/shop/pedidos
@@ -68,12 +72,13 @@ class PedidoController extends Controller
         // ── 2. Validar y recalcular carrito ───────────────────────────────
         $carrito = $this->cartValidator->validate($data['items']);
 
-        // ── 2.1 Validar pedido mínimo de la zona ─────────────────────────
-        if ($zona && $zona->pedido_minimo > 0 && $carrito['subtotal'] < (float) $zona->pedido_minimo) {
+        // ── 2.1 Validar pedido mínimo de la zona (subtotal + gastos envío) ────
+        $totalConEnvio = $carrito['subtotal'] + $gastosEnvio;
+        if ($zona && $zona->pedido_minimo > 0 && $totalConEnvio < (float) $zona->pedido_minimo) {
             return response()->json([
-                'message' => "El pedido mínimo para esta zona es de {$zona->pedido_minimo} €.",
+                'message' => "El pedido mínimo para esta zona es de {$zona->pedido_minimo} € (envío incluido).",
                 'errors'  => [
-                    'pedido_minimo' => ["El pedido mínimo para esta zona es de {$zona->pedido_minimo} €."],
+                    'pedido_minimo' => ["El pedido mínimo para esta zona es de {$zona->pedido_minimo} € (envío incluido)."],
                 ],
             ], 422);
         }
@@ -111,6 +116,12 @@ class PedidoController extends Controller
         $subtotal = $carrito['subtotal'];
         $total    = round($subtotal + $gastosEnvio, 2);
 
+        // ── 3.1 Determinar estado inicial según método de pago ─────────
+        $esPagoTarjeta = $data['metodo_pago'] === 'tarjeta';
+        $estadoInicial = $esPagoTarjeta ? 'pendiente_pago' : 'pendiente';
+        $estadoPago    = $esPagoTarjeta ? 'pendiente' : 'no_aplica';
+        $dsOrder       = $esPagoTarjeta ? $this->redsys->generarDsOrder() : null;
+
         // ── 4. Persistir en transacción ───────────────────────────────────
         $pedido = DB::transaction(function () use (
             $cliente,
@@ -122,11 +133,14 @@ class PedidoController extends Controller
             $gastosEnvio,
             $total,
             $carrito,
-            $horaDeseada
+            $horaDeseada,
+            $estadoInicial,
+            $estadoPago,
+            $dsOrder
         ) {
             $pedido = Pedido::create([
                 'codigo'           => $this->generarCodigo(),
-                'estado'           => 'pendiente',
+                'estado'           => $estadoInicial,
                 'cliente_nombre'   => $cliente['nombre'],
                 'cliente_telefono' => $cliente['telefono'],
                 'direccion'        => $esRecogida ? null : $cliente['direccion'],
@@ -136,6 +150,8 @@ class PedidoController extends Controller
                 'gastos_envio'     => $gastosEnvio,
                 'total'            => $total,
                 'metodo_pago'      => $data['metodo_pago'],
+                'estado_pago'      => $estadoPago,
+                'ds_order'         => $dsOrder,
                 'observaciones'    => $data['observaciones'] ?? null,
                 'hora_deseada'     => $horaDeseada,
                 'tipo_entrega'     => $tipoEntrega,
@@ -178,8 +194,9 @@ class PedidoController extends Controller
         // event(new \App\Events\PedidoCreado($pedido));
 
         return response()->json([
-            'message' => 'Pedido creado correctamente.',
-            'pedido'  => $pedido,
+            'message'            => 'Pedido creado correctamente.',
+            'pedido'             => $pedido,
+            'requiere_pago_tpv'  => $esPagoTarjeta,
         ], 201);
     }
 

@@ -60,6 +60,8 @@ export default function PasarelaPagoIndex() {
         redsys_moneda: "978",
         redsys_tipo_transaccion: "0",
         redsys_nombre_comercio: "",
+        redsys_url_ok: "",
+        redsys_url_ko: "",
     });
     const [secretKeySet, setSecretKeySet] = useState(false);
     const [secretKeyMasked, setSecretKeyMasked] = useState("");
@@ -77,6 +79,8 @@ export default function PasarelaPagoIndex() {
                 redsys_moneda: data.redsys_moneda || "978",
                 redsys_tipo_transaccion: data.redsys_tipo_transaccion || "0",
                 redsys_nombre_comercio: data.redsys_nombre_comercio || "",
+                redsys_url_ok: data.redsys_url_ok || "",
+                redsys_url_ko: data.redsys_url_ko || "",
             });
             setSecretKeySet(data.redsys_secret_key_set || false);
             setSecretKeyMasked(data.redsys_secret_key_masked || "");
@@ -226,6 +230,35 @@ export default function PasarelaPagoIndex() {
                         </div>
                     </div>
 
+                    {/* URLs de retorno de la tienda */}
+                    <div className="rounded-3xl bg-white border border-gray-200 shadow-[0_10px_40px_rgba(0,0,0,0.06)] overflow-hidden">
+                        <div className="px-6 py-4 border-b border-gray-100 bg-slate-50/70">
+                            <h2 className="text-sm font-bold text-gray-800 uppercase tracking-wider">
+                                URLs de retorno (tienda)
+                            </h2>
+                            <p className="text-xs text-gray-400 mt-1">
+                                Adonde vuelve el cliente despues de pagar en el TPV. Deben apuntar al dominio de la tienda React.
+                            </p>
+                        </div>
+
+                        <div className="p-6 space-y-5">
+                            <Campo
+                                label="URL de retorno OK"
+                                descripcion="Pagina de la tienda cuando el pago es correcto"
+                                value={config.redsys_url_ok}
+                                onChange={(v) => setConfig({ ...config, redsys_url_ok: v })}
+                                placeholder="https://tutienda.com/pago/ok"
+                            />
+                            <Campo
+                                label="URL de retorno KO"
+                                descripcion="Pagina de la tienda cuando el pago es rechazado"
+                                value={config.redsys_url_ko}
+                                onChange={(v) => setConfig({ ...config, redsys_url_ko: v })}
+                                placeholder="https://tutienda.com/pago/error"
+                            />
+                        </div>
+                    </div>
+
                     {/* Configuración avanzada */}
                     <div className="rounded-3xl bg-white border border-gray-200 shadow-[0_10px_40px_rgba(0,0,0,0.06)] overflow-hidden">
                         <div className="px-6 py-4 border-b border-gray-100 bg-slate-50/70">
@@ -366,30 +399,30 @@ export default function PasarelaPagoIndex() {
                     {/* Info */}
                     <div className="rounded-3xl bg-gradient-to-br from-slate-50 to-gray-100 border border-gray-200 p-5">
                         <h3 className="text-xs font-bold text-gray-600 uppercase tracking-wider mb-3">
-                            URLs de integracion
+                            URLs activas
                         </h3>
                         <div className="space-y-3 text-xs">
                             <div>
-                                <span className="text-gray-400 block">Notificacion (callback):</span>
+                                <span className="text-gray-400 block">Notificacion (backend, automatica):</span>
                                 <code className="text-gray-700 bg-white px-2 py-1 rounded-lg border text-[11px] block mt-1 break-all">
-                                    {window.location.origin}/api/pago/notificacion
+                                    {window.location.origin}/api/shop/redsys/notificacion
                                 </code>
                             </div>
                             <div>
-                                <span className="text-gray-400 block">Retorno OK:</span>
+                                <span className="text-gray-400 block">Retorno OK (tienda):</span>
                                 <code className="text-gray-700 bg-white px-2 py-1 rounded-lg border text-[11px] block mt-1 break-all">
-                                    {window.location.origin}/pago/ok
+                                    {config.redsys_url_ok || <span className="text-amber-500">Pendiente de configurar</span>}
                                 </code>
                             </div>
                             <div>
-                                <span className="text-gray-400 block">Retorno KO:</span>
+                                <span className="text-gray-400 block">Retorno KO (tienda):</span>
                                 <code className="text-gray-700 bg-white px-2 py-1 rounded-lg border text-[11px] block mt-1 break-all">
-                                    {window.location.origin}/pago/error
+                                    {config.redsys_url_ko || <span className="text-amber-500">Pendiente de configurar</span>}
                                 </code>
                             </div>
                         </div>
                         <p className="text-[11px] text-gray-400 mt-4 leading-relaxed">
-                            Estas URLs deben configurarse en el panel de administracion de Redsys que proporciona CaixaBank.
+                            La URL de notificacion es del backend y no se puede cambiar. Las de retorno OK/KO deben apuntar a la tienda React.
                         </p>
                     </div>
                 </div>

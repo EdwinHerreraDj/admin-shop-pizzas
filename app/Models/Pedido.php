@@ -27,6 +27,12 @@ class Pedido extends Model
         'gastos_envio',
         'total',
         'metodo_pago',
+        'estado_pago',
+        'ds_order',
+        'ds_response_code',
+        'ds_authorisation_code',
+        'ds_transaction_date',
+        'ds_raw_notification',
         'repartidor_id',
         'hora_salida',
         'hora_entrega',
@@ -35,11 +41,13 @@ class Pedido extends Model
     ];
 
     protected $casts = [
-        'subtotal'     => 'decimal:2',
-        'gastos_envio' => 'decimal:2',
-        'total'        => 'decimal:2',
-        'hora_salida'  => 'datetime',
-        'hora_entrega' => 'datetime',
+        'subtotal'             => 'decimal:2',
+        'gastos_envio'         => 'decimal:2',
+        'total'                => 'decimal:2',
+        'hora_salida'          => 'datetime',
+        'hora_entrega'         => 'datetime',
+        'ds_transaction_date'  => 'datetime',
+        'ds_raw_notification'  => 'array',
     ];
 
     public function items()

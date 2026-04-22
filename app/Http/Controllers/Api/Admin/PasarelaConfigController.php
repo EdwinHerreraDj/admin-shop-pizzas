@@ -21,6 +21,8 @@ class PasarelaConfigController extends Controller
         'redsys_moneda',           // '978' = EUR
         'redsys_tipo_transaccion', // '0' = Autorización
         'redsys_nombre_comercio',  // Nombre que ve el cliente
+        'redsys_url_ok',           // URL de la tienda React tras pago OK
+        'redsys_url_ko',           // URL de la tienda React tras pago KO
     ];
 
     /**
@@ -61,6 +63,8 @@ class PasarelaConfigController extends Controller
             'redsys_moneda'           => ['nullable', 'string', 'max:5'],
             'redsys_tipo_transaccion' => ['nullable', 'string', 'max:2'],
             'redsys_nombre_comercio'  => ['nullable', 'string', 'max:100'],
+            'redsys_url_ok'           => ['nullable', 'url', 'max:255'],
+            'redsys_url_ko'           => ['nullable', 'url', 'max:255'],
         ]);
 
         foreach ($data as $clave => $valor) {
@@ -95,6 +99,12 @@ class PasarelaConfigController extends Controller
         }
         if (empty($secretKey)) {
             $errores[] = 'Falta la clave secreta.';
+        }
+        if (empty(Configuracion::get('redsys_url_ok'))) {
+            $errores[] = 'Falta la URL de retorno OK de la tienda.';
+        }
+        if (empty(Configuracion::get('redsys_url_ko'))) {
+            $errores[] = 'Falta la URL de retorno KO de la tienda.';
         }
 
         if (count($errores) > 0) {

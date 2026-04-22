@@ -136,6 +136,22 @@ Route::middleware('auth')->group(function () {
         return view('admin.pasarela-pago.index');
     })->name('admin.pasarela-pago.index');
 
+    Route::get('/admin/estado-tienda', function () {
+        return view('admin.estado-tienda.index');
+    })->name('admin.estado-tienda.index');
+
+    Route::get('/admin/cards-info', function () {
+        return view('admin.cards-info.index');
+    })->name('admin.cards-info.index');
+
+    Route::get('/admin/paginas-legales', function () {
+        return view('admin.paginas-legales.index');
+    })->name('admin.paginas-legales.index');
+
+    Route::get('/admin/empresa', function () {
+        return view('admin.empresa.index');
+    })->name('admin.empresa.index');
+
     Route::get('/admin/qz-diagnostico', function () {
         return view('admin.qz-diagnostico.index');
     })->name('admin.qz-diagnostico.index');
