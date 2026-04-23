@@ -17,7 +17,7 @@ class PizzaPlantillaController extends Controller
             ->firstOrFail();
 
         $articulo->load([
-            'precios.tamano:id,nombre',
+            'precios.tamano:id,nombre,recargo_mitades',
             'ingredientes' => function ($q) {
                 $q->withPivot([
                     'modo',
@@ -40,6 +40,7 @@ class PizzaPlantillaController extends Controller
                 'id' => (int) $p->tamano->id,
                 'nombre' => $p->tamano->nombre,
                 'precio' => (float) $p->precio,
+                'recargo_mitades' => (float) ($p->tamano->recargo_mitades ?? 0),
             ];
         })->values();
 

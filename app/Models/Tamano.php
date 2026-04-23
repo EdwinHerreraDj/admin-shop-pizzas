@@ -13,11 +13,13 @@ class Tamano extends Model
         'nombre',
         'slug',
         'orden',
+        'recargo_mitades',
         'activo',
     ];
 
     protected $casts = [
         'orden' => 'integer',
+        'recargo_mitades' => 'decimal:2',
         'activo' => 'boolean',
     ];
 

@@ -49,6 +49,20 @@ class RedsysController extends Controller
             ], 503);
         }
 
+        // Redsys no permite reintentar con el mismo ds_order. Si el intento
+        // anterior falló, generamos uno nuevo y limpiamos la respuesta previa.
+        if (in_array($pedido->estado_pago, ['fallido', 'pendiente'], true)
+            && !empty($pedido->ds_response_code)
+        ) {
+            $pedido->ds_order             = $this->redsys->generarDsOrder();
+            $pedido->estado_pago          = 'pendiente';
+            $pedido->ds_response_code     = null;
+            $pedido->ds_authorisation_code = null;
+            $pedido->ds_transaction_date  = null;
+            $pedido->ds_raw_notification  = null;
+            $pedido->save();
+        }
+
         $datos = $this->redsys->prepararFormulario($pedido);
 
         return response()->json($datos);

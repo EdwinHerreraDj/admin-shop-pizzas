@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 import { createPortal } from "react-dom";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { imprimirTicketQZ } from "@/react/lib/qzPrinter";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constantes
@@ -343,12 +344,106 @@ function ModalEditar({ pedido, onClose, onSaved }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
+// Modal: confirmar eliminación
+// ─────────────────────────────────────────────────────────────────────────────
+
+function ModalEliminar({ pedido, onClose, onDeleted }) {
+    const [loading, setLoading] = useState(false);
+
+    const eliminar = async () => {
+        setLoading(true);
+        try {
+            await axios.delete(`/api/admin/gestion/pedidos/${pedido.id}`);
+            toast.success(`Pedido ${pedido.codigo} eliminado`);
+            onDeleted(pedido.id);
+            onClose();
+        } catch (e) {
+            toast.error(
+                e?.response?.data?.message ?? "No se pudo eliminar el pedido",
+            );
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return createPortal(
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm px-4">
+            <div className="w-full max-w-md rounded-3xl bg-white shadow-[0_40px_120px_rgba(0,0,0,0.45)] overflow-hidden">
+                <div className="px-6 py-5 bg-gradient-to-r from-red-500 to-rose-600 text-white">
+                    <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl bg-white/20 flex items-center justify-center text-xl">
+                            ⚠️
+                        </div>
+                        <div>
+                            <h3 className="font-semibold">Eliminar pedido</h3>
+                            <p className="text-white/80 text-xs">
+                                Esta acción no se puede deshacer
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div className="px-6 py-5 space-y-3 text-sm text-slate-600">
+                    <p>
+                        ¿Seguro que quieres eliminar el pedido{" "}
+                        <strong className="font-mono text-slate-800">
+                            {pedido.codigo}
+                        </strong>
+                        ?
+                    </p>
+                    <p className="text-xs text-slate-500">
+                        Se borrará el pedido, sus artículos e ingredientes. Los
+                        clientes con el código guardado ya no podrán hacer
+                        tracking.
+                    </p>
+                </div>
+                <div className="px-6 py-4 border-t border-slate-100 bg-slate-50 flex justify-end gap-3">
+                    <BtnCancelar onClick={onClose} />
+                    <button
+                        onClick={eliminar}
+                        disabled={loading}
+                        className="h-11 px-6 rounded-xl bg-gradient-to-r from-red-500 to-rose-600 text-white font-semibold hover:opacity-95 transition shadow-lg shadow-rose-500/30 disabled:opacity-50"
+                    >
+                        {loading ? "Eliminando…" : "Eliminar pedido"}
+                    </button>
+                </div>
+            </div>
+        </div>,
+        document.body,
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
 // Fila de pedido expandible
 // ─────────────────────────────────────────────────────────────────────────────
 
-function FilaPedido({ pedido, onActualizar }) {
+function FilaPedido({ pedido, onActualizar, onEliminado }) {
     const [expandido, setExpandido] = useState(false);
     const [modal, setModal] = useState(null);
+    const [imprimiendo, setImprimiendo] = useState(false);
+
+    const handleImprimir = async (e) => {
+        e.stopPropagation();
+        setImprimiendo(true);
+        try {
+            // Cargar el pedido completo con items e ingredientes
+            const { data } = await axios.get(
+                `/api/admin/gestion/pedidos/${pedido.id}`,
+            );
+            const pedidoCompleto = data.pedido ?? data;
+            const impreso = await imprimirTicketQZ(pedidoCompleto);
+            if (impreso) {
+                toast.success("Ticket enviado a impresora");
+            } else {
+                toast.error(
+                    "No se pudo imprimir. Verifica que QZ Tray esté abierto.",
+                );
+            }
+        } catch {
+            toast.error("Error al cargar el pedido para imprimir");
+        } finally {
+            setImprimiendo(false);
+        }
+    };
 
     return (
         <>
@@ -413,6 +508,25 @@ function FilaPedido({ pedido, onActualizar }) {
                                 <i className={icon} />
                             </button>
                         ))}
+
+                        {/* Imprimir */}
+                        <button
+                            title="Imprimir ticket"
+                            onClick={handleImprimir}
+                            disabled={imprimiendo}
+                            className="h-8 w-8 flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 hover:bg-indigo-100 text-indigo-600 transition text-sm disabled:opacity-50"
+                        >
+                            <i className="mgc_print_line" />
+                        </button>
+
+                        {/* Eliminar */}
+                        <button
+                            title="Eliminar pedido"
+                            onClick={() => setModal("eliminar")}
+                            className="h-8 w-8 flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 transition text-sm"
+                        >
+                            <i className="mgc_delete_2_line" />
+                        </button>
                     </div>
                 </td>
             </tr>
@@ -537,6 +651,13 @@ function FilaPedido({ pedido, onActualizar }) {
                     onSaved={onActualizar}
                 />
             )}
+            {modal === "eliminar" && (
+                <ModalEliminar
+                    pedido={pedido}
+                    onClose={() => setModal(null)}
+                    onDeleted={onEliminado}
+                />
+            )}
         </>
     );
 }
@@ -609,6 +730,16 @@ export default function GestionPedidosIndex() {
         setPedidos((prev) =>
             prev.map((p) => (p.id === actualizado.id ? actualizado : p)),
         );
+        refrescarResumen();
+    };
+
+    const onEliminado = (id) => {
+        setPedidos((prev) => prev.filter((p) => p.id !== id));
+        setMeta((m) => ({ ...m, total: Math.max(0, m.total - 1) }));
+        refrescarResumen();
+    };
+
+    const refrescarResumen = () => {
         const resumenParams = {
             fecha_desde: filtros.fecha_desde || HOY,
             ...(filtros.fecha_hasta
@@ -862,6 +993,7 @@ export default function GestionPedidosIndex() {
                                         key={p.id}
                                         pedido={p}
                                         onActualizar={onActualizar}
+                                        onEliminado={onEliminado}
                                     />
                                 ))}
                             </tbody>

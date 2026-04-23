@@ -253,4 +253,23 @@ class GestionPedidosController extends Controller
 
         return response()->json($repartidores);
     }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // DELETE /api/admin/gestion/pedidos/{pedido}
+    // Eliminar un pedido completo (con sus items e ingredientes en cascada)
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function destroy(Pedido $pedido): JsonResponse
+    {
+        $codigo = $pedido->codigo;
+
+        // Limpiar el pedido de la lista de activos en localStorage es
+        // responsabilidad del frontend del cliente — aquí solo borramos en BD.
+        // La relación items → ingredientes tiene cascadeOnDelete configurado.
+        $pedido->delete();
+
+        return response()->json([
+            'message' => "Pedido {$codigo} eliminado correctamente.",
+        ]);
+    }
 }

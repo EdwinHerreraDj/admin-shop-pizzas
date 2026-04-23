@@ -158,6 +158,9 @@ export default function TamanosIndex() {
                                 <th className="px-7 py-4 w-[90px]">ID</th>
                                 <th className="px-7 py-4">Nombre</th>
                                 <th className="px-7 py-4 w-[140px]">Orden</th>
+                                <th className="px-7 py-4 w-[170px]">
+                                    Recargo mitades
+                                </th>
                                 <th className="px-7 py-4 text-right w-[180px]">
                                     Acciones
                                 </th>
@@ -169,7 +172,7 @@ export default function TamanosIndex() {
                             {loading ? (
                                 <tr>
                                     <td
-                                        colSpan="4"
+                                        colSpan="5"
                                         className="px-7 py-14 text-center text-gray-400"
                                     >
                                         Cargando tamaños...
@@ -178,7 +181,7 @@ export default function TamanosIndex() {
                             ) : items.length === 0 ? (
                                 <tr>
                                     <td
-                                        colSpan="4"
+                                        colSpan="5"
                                         className="px-7 py-14 text-center text-gray-400"
                                     >
                                         No hay tamaños registrados
@@ -218,6 +221,19 @@ export default function TamanosIndex() {
                                             >
                                                 {row.orden}
                                             </span>
+                                        </td>
+
+                                        {/* Recargo mitades */}
+                                        <td className="px-7 py-5">
+                                            {Number(row.recargo_mitades) > 0 ? (
+                                                <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                                                    +{Number(row.recargo_mitades).toFixed(2)} €
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-xs">
+                                                    Sin recargo
+                                                </span>
+                                            )}
                                         </td>
 
                                         {/* Acciones */}

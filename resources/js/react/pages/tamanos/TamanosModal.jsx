@@ -7,6 +7,9 @@ export default function TamanoModal({ item, onClose, onSaved }) {
 
     const [nombre, setNombre] = useState(item?.nombre ?? "");
     const [orden, setOrden] = useState(item?.orden ?? 1);
+    const [recargoMitades, setRecargoMitades] = useState(
+        item?.recargo_mitades ?? 0,
+    );
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState({});
 
@@ -20,7 +23,11 @@ export default function TamanoModal({ item, onClose, onSaved }) {
         setErrors({});
 
         try {
-            const payload = { nombre, orden };
+            const payload = {
+                nombre,
+                orden,
+                recargo_mitades: Number(recargoMitades) || 0,
+            };
 
             if (isEdit) {
                 await axios.put(`/api/admin/tamanos/${item.id}`, payload);
@@ -164,6 +171,52 @@ export default function TamanoModal({ item, onClose, onSaved }) {
                         {errors.orden && (
                             <div className="mt-1 text-xs text-red-600">
                                 {errors.orden[0]}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Recargo por mitades */}
+                    <div>
+                        <label className="text-xs font-semibold uppercase tracking-wide text-gray-500">
+                            Recargo por pizza mitades (€)
+                        </label>
+                        <p className="text-xs text-gray-400 mt-0.5 mb-1">
+                            Cantidad extra que se suma al precio cuando se
+                            combina este tamaño como pizza por mitades. Dejar
+                            en 0 si este tamaño no admite mitades.
+                        </p>
+
+                        <div className="relative">
+                            <input
+                                type="number"
+                                step="0.01"
+                                min="0"
+                                max="99.99"
+                                value={recargoMitades}
+                                onChange={(e) =>
+                                    setRecargoMitades(e.target.value)
+                                }
+                                className="
+                                    mt-1
+                                    w-full h-11 pl-3 pr-10
+                                    rounded-xl
+                                    border border-gray-300
+                                    bg-white
+                                    font-medium
+                                    focus:outline-none
+                                    focus:ring-2
+                                    focus:ring-amber-500/40
+                                    focus:border-amber-500
+                                "
+                            />
+                            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">
+                                €
+                            </span>
+                        </div>
+
+                        {errors.recargo_mitades && (
+                            <div className="mt-1 text-xs text-red-600">
+                                {errors.recargo_mitades[0]}
                             </div>
                         )}
                     </div>

@@ -211,12 +211,29 @@ class CartValidator
         }
         unset($ing); // limpiar referencia del foreach
 
-        // Fix #1: precio BASE se promedia, extras se SUMAN (cada mitad paga sus propios extras)
-        // Ejemplo: mitadA extras=4€, mitadB extras=0€ → precio_extras = 4€ (no 2€)
-        $precioBaseMitades   = round(($precioBaseA + $precioBaseB) / 2, 2);
-        $precioExtrasMitades = round($precioExtrasA + $precioExtrasB, 2);
+        // Regla de negocio (igual al frontend):
+        //   precio = max(totalA, totalB) + recargo_mitades
+        // Donde totalX = precioBaseX + precioExtrasX.
+        // La mitad MÁS CARA (base + extras) define el precio y se suma el recargo.
+        $totalA = $precioBaseA + $precioExtrasA;
+        $totalB = $precioBaseB + $precioExtrasB;
 
-        // Fix #3: usar valores ya redondeados para evitar acumulación de floats
+        // Determinar cuál es la mitad más cara
+        $usarA = $totalA >= $totalB;
+        $baseMasCara   = $usarA ? $precioBaseA : $precioBaseB;
+        $extrasMasCara = $usarA ? $precioExtrasA : $precioExtrasB;
+
+        // Recargo por mitades según el tamaño (configurable desde admin → Tamaños)
+        // Ambos tamanoA y tamanoB coinciden (validado antes), usamos cualquiera.
+        $recargoMitades = $tamanoA
+            ? (float) $tamanoA->recargo_mitades
+            : 0.0;
+
+        // precio_base y precio_extras los guardamos desglosados, de forma que
+        // su suma sea exactamente el precio unitario final.
+        $precioBaseMitades   = round($baseMasCara, 2);
+        $precioExtrasMitades = round($extrasMasCara + $recargoMitades, 2);
+
         $precioUnitario = round($precioBaseMitades + $precioExtrasMitades, 2);
         $subtotal       = round($precioUnitario * $cantidad, 2);
 
@@ -440,4 +457,5 @@ class CartValidator
     {
         throw ValidationException::withMessages([$field => $message]);
     }
+
 }

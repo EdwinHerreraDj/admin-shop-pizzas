@@ -177,6 +177,9 @@ Route::prefix('admin')->group(function () {
 
     // Editar datos del cliente / observaciones
     Route::patch('gestion/pedidos/{pedido}/observaciones', [GestionPedidosController::class, 'actualizarObservaciones']);
+
+    // Eliminar un pedido completo
+    Route::delete('gestion/pedidos/{pedido}', [GestionPedidosController::class, 'destroy']);
 });
 
 

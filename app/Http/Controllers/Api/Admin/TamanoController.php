@@ -16,8 +16,9 @@ class TamanoController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'nombre' => ['required', 'string', 'max:50'],
-            'orden'  => ['required', 'integer', 'min:1'],
+            'nombre'          => ['required', 'string', 'max:50'],
+            'orden'           => ['required', 'integer', 'min:1'],
+            'recargo_mitades' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
         ]);
 
         $tamano = Tamano::create($data);
@@ -33,8 +34,9 @@ class TamanoController extends Controller
     public function update(Request $request, Tamano $tamano)
     {
         $data = $request->validate([
-            'nombre' => ['required', 'string', 'max:50'],
-            'orden'  => ['required', 'integer', 'min:1'],
+            'nombre'          => ['required', 'string', 'max:50'],
+            'orden'           => ['required', 'integer', 'min:1'],
+            'recargo_mitades' => ['nullable', 'numeric', 'min:0', 'max:99.99'],
         ]);
 
         $tamano->update($data);
