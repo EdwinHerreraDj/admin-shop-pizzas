@@ -197,6 +197,9 @@ Route::prefix('shop')->group(function () {
     // ── Horario semanal (siempre accesible, para el footer) ──────────────────
     Route::get('/horario-semanal', [FranjaHorariaPublicController::class, 'semanal']);
 
+    // ── ¿La tienda está abierta ahora mismo? ─────────────────────────────────
+    Route::get('/abierto-ahora', [FranjaHorariaPublicController::class, 'abiertoAhora']);
+
     // ── Info de empresa (contacto, dirección, maps) ──────────────────────────
     Route::get('/empresa', [EmpresaPublicController::class, 'show']);
 

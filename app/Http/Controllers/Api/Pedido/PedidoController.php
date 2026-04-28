@@ -83,12 +83,13 @@ class PedidoController extends Controller
             ], 422);
         }
 
-        // ── 2.2 Validar hora deseada ─────────────────────────────────────
+        // ── 2.2 Validar hora deseada (o que la tienda esté abierta si ASAP) ──
         $horaDeseada = $data['hora_deseada'] ?? null;
+        $ahora       = Carbon::now();
+        $diaSemana   = $ahora->dayOfWeekIso - 1;
+        $horaActual  = $ahora->format('H:i');
 
         if ($horaDeseada) {
-            $ahora      = Carbon::now();
-            $diaSemana  = $ahora->dayOfWeekIso - 1;
             $horaMinima = $ahora->copy()->addMinutes(60)->format('H:i');
 
             if ($horaDeseada < $horaMinima) {
@@ -108,6 +109,22 @@ class PedidoController extends Controller
                 return response()->json([
                     'message' => 'La hora seleccionada está fuera del horario de servicio.',
                     'errors'  => ['hora_deseada' => ['La hora seleccionada está fuera del horario de servicio.']],
+                ], 422);
+            }
+        } else {
+            // Modo ASAP: validar que la hora actual esté dentro de una franja activa.
+            $abiertoAhora = FranjaHoraria::activas()
+                ->delDia($diaSemana)
+                ->where('hora_apertura', '<=', $horaActual)
+                ->where('hora_cierre', '>', $horaActual)
+                ->exists();
+
+            if (! $abiertoAhora) {
+                return response()->json([
+                    'message' => 'Estamos fuera del horario de servicio. Programa tu pedido para una hora dentro del horario.',
+                    'errors'  => [
+                        'hora_deseada' => ['Estamos fuera del horario de servicio. Programa tu pedido para una hora dentro del horario.'],
+                    ],
                 ], 422);
             }
         }

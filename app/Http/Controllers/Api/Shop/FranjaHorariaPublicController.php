@@ -55,6 +55,37 @@ class FranjaHorariaPublicController extends Controller
     }
 
     /**
+     * Indica si la tienda está abierta ahora mismo según las franjas horarias.
+     * Útil para que el frontend desactive el modo "ASAP" cuando estamos cerrados.
+     */
+    public function abiertoAhora()
+    {
+        $ahora      = Carbon::now();
+        $diaSemana  = $ahora->dayOfWeekIso - 1;
+        $horaActual = $ahora->format('H:i');
+
+        $franja = FranjaHoraria::activas()
+            ->delDia($diaSemana)
+            ->where('hora_apertura', '<=', $horaActual)
+            ->where('hora_cierre', '>', $horaActual)
+            ->first();
+
+        // Próxima franja del día (la siguiente que abre hoy)
+        $proxima = FranjaHoraria::activas()
+            ->delDia($diaSemana)
+            ->where('hora_apertura', '>', $horaActual)
+            ->orderBy('hora_apertura')
+            ->first();
+
+        return response()->json([
+            'abierto'        => $franja !== null,
+            'hora_actual'    => $horaActual,
+            'cierra_a'       => $franja ? substr($franja->hora_cierre, 0, 5) : null,
+            'proxima_apertura' => $proxima ? substr($proxima->hora_apertura, 0, 5) : null,
+        ]);
+    }
+
+    /**
      * Devuelve el horario semanal agrupado por día.
      * Ideal para mostrar en el footer.
      */
