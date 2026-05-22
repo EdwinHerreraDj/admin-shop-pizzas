@@ -21,6 +21,8 @@ class Pedido extends Model
         'cliente_nombre',
         'cliente_telefono',
         'direccion',
+        'bloque',
+        'piso',
         'codigo_postal',
         'zona_envio_id',
         'subtotal',

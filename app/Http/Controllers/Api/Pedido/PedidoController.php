@@ -161,6 +161,8 @@ class PedidoController extends Controller
                 'cliente_nombre'   => $cliente['nombre'],
                 'cliente_telefono' => $cliente['telefono'],
                 'direccion'        => $esRecogida ? null : $cliente['direccion'],
+                'bloque'           => $esRecogida ? null : ($cliente['bloque'] ?? null),
+                'piso'             => $esRecogida ? null : ($cliente['piso'] ?? null),
                 'codigo_postal'    => $esRecogida ? null : $cliente['codigo_postal'],
                 'zona_envio_id'    => $zona?->id,
                 'subtotal'         => $subtotal,

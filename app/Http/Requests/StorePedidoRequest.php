@@ -28,6 +28,10 @@ class StorePedidoRequest extends FormRequest
             'cliente.direccion'         => [$esRecogida ? 'nullable' : 'required', 'string', 'max:500'],
             'cliente.codigo_postal'     => [$esRecogida ? 'nullable' : 'required', 'string', 'max:10'],
 
+            // Bloque y piso: siempre opcionales (solo aplican a domicilio)
+            'cliente.bloque'            => ['nullable', 'string', 'max:100'],
+            'cliente.piso'              => ['nullable', 'string', 'max:100'],
+
             // Barrio: obligatorio solo en domicilio
             'cliente.barrio'            => [$esRecogida ? 'nullable' : 'required', 'string', 'max:255'],
 

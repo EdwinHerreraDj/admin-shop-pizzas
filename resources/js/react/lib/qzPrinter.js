@@ -128,6 +128,43 @@ function centrar(texto) {
     return " ".repeat(pad) + texto + "\n";
 }
 
+// Parte un texto largo en varias líneas, respetando palabras siempre que sea posible.
+// Si una palabra excede el ancho, se corta a la fuerza.
+function envolver(texto, ancho = ANCHO, indent = "") {
+    if (!texto) return "";
+    const anchoUtil = ancho - indent.length;
+    const palabras = String(texto).split(/\s+/).filter(Boolean);
+    const lineas = [];
+    let actual = "";
+
+    for (const palabra of palabras) {
+        const candidato = actual ? `${actual} ${palabra}` : palabra;
+        if (candidato.length <= anchoUtil) {
+            actual = candidato;
+            continue;
+        }
+        if (actual) lineas.push(actual);
+
+        if (palabra.length > anchoUtil) {
+            for (let i = 0; i < palabra.length; i += anchoUtil) {
+                lineas.push(palabra.slice(i, i + anchoUtil));
+            }
+            actual = "";
+        } else {
+            actual = palabra;
+        }
+    }
+    if (actual) lineas.push(actual);
+
+    return lineas.map((l) => indent + l + "\n").join("");
+}
+
+// Etiqueta a la izquierda y valor envuelto debajo con indent.
+function bloque(label, texto) {
+    if (!texto) return "";
+    return label + ":\n" + envolver(texto, ANCHO, "  ");
+}
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Generar ticket
 // ─────────────────────────────────────────────────────────────────────────────
@@ -152,8 +189,8 @@ function generarTicket(pedido) {
     t += CMD.LEFT;
     t += CMD.LINEA;
 
-    // Datos cliente
-    t += fila("Cliente", limpiar(pedido.cliente_nombre));
+    // Datos cliente (envueltos si son largos)
+    t += bloque("Cliente", limpiar(pedido.cliente_nombre));
     t += fila("Telefono", pedido.cliente_telefono);
 
     if (pedido.tipo_entrega === "recogida") {
@@ -161,8 +198,13 @@ function generarTicket(pedido) {
         t += centrar("*** RECOGIDA EN TIENDA ***");
         t += CMD.BOLD_OFF;
     } else {
-        const dir = limpiar(`${pedido.direccion ?? ""}, ${pedido.codigo_postal ?? ""}`);
-        t += fila("Direccion", dir.length > 25 ? dir.slice(0, 25) : dir);
+        const partes = [
+            pedido.direccion,
+            pedido.bloque,
+            pedido.piso,
+            pedido.codigo_postal,
+        ].filter(Boolean).join(", ");
+        t += bloque("Direccion", limpiar(partes));
     }
 
     t += fila("Pago", METODO_PAGO_LABEL[pedido.metodo_pago] ?? pedido.metodo_pago);
@@ -227,7 +269,8 @@ function generarTicket(pedido) {
     if (pedido.observaciones) {
         t += CMD.LINEA;
         t += CMD.BOLD_ON;
-        t += "OBS: " + limpiar(pedido.observaciones) + "\n";
+        t += "OBS:\n";
+        t += envolver(limpiar(pedido.observaciones), ANCHO, "  ");
         t += CMD.BOLD_OFF;
     }
 

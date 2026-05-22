@@ -12,22 +12,21 @@ class PedidoCocinaController extends Controller
 {
     // ─────────────────────────────────────────────────────────────────────────
     // Estados visibles en el panel cocina (entregado NO se muestra)
+    // Reducidos a 3 estados a petición del cliente. Los estados históricos
+    // 'en_preparacion' y 'listo' siguen en el enum por compatibilidad pero
+    // ya no se gestionan desde este panel.
     // ─────────────────────────────────────────────────────────────────────────
     private const ESTADOS_COCINA = [
         'pendiente',
         'aceptado',
-        'en_preparacion',
-        'listo',
         'en_camino',
     ];
 
-    // Transiciones permitidas — flujo completo sin repartidores
+    // Transiciones permitidas — flujo simplificado
     private const TRANSICIONES_COCINA = [
-        'pendiente'      => ['aceptado',       'cancelado'],
-        'aceptado'       => ['en_preparacion', 'cancelado'],
-        'en_preparacion' => ['listo',          'cancelado'],
-        'listo'          => ['en_camino',      'cancelado'],
-        'en_camino'      => ['entregado'],
+        'pendiente' => ['aceptado',  'cancelado'],
+        'aceptado'  => ['en_camino', 'cancelado'],
+        'en_camino' => ['entregado'],
     ];
 
     // Relaciones que se cargan siempre.

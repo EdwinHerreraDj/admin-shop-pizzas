@@ -9,20 +9,15 @@ import { imprimirTicketQZ, conectarQZ } from "@/react/lib/qzPrinter";
 
 const ESTADOS = {
     pendiente: { label: "Pendiente", color: "amber", siguiente: "aceptado" },
-    aceptado: { label: "Aceptado", color: "blue", siguiente: "en_preparacion" },
-    en_preparacion: {
-        label: "Preparando",
-        color: "violet",
-        siguiente: "listo",
-    },
-    listo: { label: "Listo", color: "emerald", siguiente: "en_camino" },
+    aceptado: { label: "Aceptado", color: "blue", siguiente: "en_camino" },
     en_camino: { label: "En camino", color: "cyan", siguiente: "entregado" },
     entregado: { label: "Entregado", color: "slate", siguiente: null },
     cancelado: { label: "Cancelado", color: "rose", siguiente: null },
 };
 
-// Panel de cocina: 5 columnas visibles. Entregado desaparece del panel.
-const COLUMNAS = ["pendiente", "aceptado", "en_preparacion", "listo", "en_camino"];
+// Panel de cocina: 3 columnas visibles (timeline por pedido).
+// Cada pedido ocupa su propia fila horizontal y se desplaza entre celdas.
+const COLUMNAS = ["pendiente", "aceptado", "en_camino"];
 
 // Fix #1: separar colBg y colBorder — eliminado el frágil .split(" ")[1]
 const COLOR_CLASSES = {
@@ -108,7 +103,7 @@ function tiempoTranscurrido(fechaStr) {
 function esCritico(fechaStr, estado) {
     const minutos = Math.floor((Date.now() - new Date(fechaStr)) / 60000);
     if (estado === "pendiente") return minutos > 3;
-    if (estado === "en_preparacion") return minutos > 20;
+    if (estado === "aceptado") return minutos > 20;
     return false;
 }
 
@@ -214,7 +209,7 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
 
     return (
         <div
-            className={`bg-white rounded-2xl border shadow-sm mb-3 overflow-hidden transition-all duration-200 ${critico ? "border-rose-400 shadow-rose-100 shadow-md" : "border-slate-200"}`}
+            className={`bg-white rounded-2xl border shadow-sm overflow-hidden transition-all duration-200 ${critico ? "border-rose-400 shadow-rose-100 shadow-md" : "border-slate-200"}`}
         >
             {/* Barra de color superior */}
             <div className={`h-1 w-full ${colors.dot}`} />
@@ -250,10 +245,13 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
                         ⭐ Recogida en tienda
                     </div>
                 ) : (
-                    <div className="flex items-center gap-1.5 text-[11px] text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
-                        <i className="mgc_location_line text-slate-400" />
-                        <span className="truncate">
-                            {pedido.direccion}, {pedido.codigo_postal}
+                    <div className="flex items-start gap-1.5 text-[11px] text-slate-600 bg-slate-50 rounded-lg px-2.5 py-1.5 mb-2">
+                        <i className="mgc_location_line text-slate-400 mt-0.5" />
+                        <span className="break-words">
+                            {pedido.direccion}
+                            {pedido.bloque ? `, ${pedido.bloque}` : ""}
+                            {pedido.piso ? `, ${pedido.piso}` : ""}
+                            {pedido.codigo_postal ? `, ${pedido.codigo_postal}` : ""}
                         </span>
                     </div>
                 )}
@@ -422,52 +420,39 @@ function TarjetaPedido({ pedido, onCambiarEstado, cargando }) {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Columna kanban
+// Cabecera de columna (timeline) — solo título y contador
 // ─────────────────────────────────────────────────────────────────────────────
 
-function Columna({ estado, pedidos, onCambiarEstado, cargandoId }) {
+function CabeceraColumna({ estado, count }) {
     const cfg = ESTADOS[estado];
     const colors = COLOR_CLASSES[cfg.color];
 
     return (
-        <div className="flex flex-col min-w-[280px] max-w-[320px] flex-1">
-            {/* Header */}
-            <div
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-t-xl border-b-2 ${colors.colBg} ${colors.colBorder}`}
+        <div
+            className={`flex items-center gap-2 px-3.5 py-2.5 rounded-xl border-2 ${colors.colBg} ${colors.colBorder}`}
+        >
+            <div className={`w-2.5 h-2.5 rounded-full ${colors.dot}`} />
+            <span
+                className={`text-xs font-bold uppercase tracking-wide ${colors.text}`}
             >
-                <div className={`w-2.5 h-2.5 rounded-full ${colors.dot}`} />
-                <span
-                    className={`text-xs font-bold uppercase tracking-wide ${colors.text}`}
-                >
-                    {cfg.label}
-                </span>
-                <span
-                    className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${colors.dot}`}
-                >
-                    {pedidos.length}
-                </span>
-            </div>
-
-            {/* Tarjetas */}
-            <div
-                className={`flex-1 overflow-y-auto p-2.5 rounded-b-xl min-h-[200px] ${colors.colBg} border border-t-0 ${colors.colBorder}`}
+                {cfg.label}
+            </span>
+            <span
+                className={`ml-auto text-[10px] font-bold px-2 py-0.5 rounded-full text-white ${colors.dot}`}
             >
-                {pedidos.length === 0 ? (
-                    <div className="flex items-center justify-center h-20 text-xs text-slate-300 font-medium">
-                        Sin pedidos
-                    </div>
-                ) : (
-                    pedidos.map((p) => (
-                        <TarjetaPedido
-                            key={p.id}
-                            pedido={p}
-                            onCambiarEstado={onCambiarEstado}
-                            cargando={cargandoId === p.id}
-                        />
-                    ))
-                )}
-            </div>
+                {count}
+            </span>
         </div>
+    );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Hueco vacío de timeline — celda placeholder cuando el pedido no está en ese estado
+// ─────────────────────────────────────────────────────────────────────────────
+
+function HuecoVacio() {
+    return (
+        <div className="rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 min-h-[120px]" />
     );
 }
 
@@ -649,18 +634,20 @@ export default function CocinaIndex() {
         }
     }, [detenerLoopSonido]);
 
-    // ── Agrupar por columna ────────────────────────────────────────────────
-    const porEstado = COLUMNAS.reduce((acc, estado) => {
-        acc[estado] = pedidos
-            .filter((p) => p.estado === estado)
-            .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    // ── Lista ordenada (timeline por pedido) ───────────────────────────────
+    // Cada pedido es su propia fila; se ordenan por fecha para que los más
+    // antiguos queden arriba (FIFO).
+    const pedidosActivos = pedidos
+        .filter((p) => COLUMNAS.includes(p.estado))
+        .sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+
+    // Contador por columna (para los badges del header)
+    const conteoPorEstado = COLUMNAS.reduce((acc, estado) => {
+        acc[estado] = pedidosActivos.filter((p) => p.estado === estado).length;
         return acc;
     }, {});
 
-    // Usa COLUMNAS como fuente de verdad — coherente con el tablero
-    const totalActivos = pedidos.filter((p) =>
-        COLUMNAS.includes(p.estado),
-    ).length;
+    const totalActivos = pedidosActivos.length;
 
     const hayPendientes = pedidos.some((p) => p.estado === "pendiente");
 
@@ -742,22 +729,50 @@ export default function CocinaIndex() {
                 </div>
             </div>
 
-            {/* TABLERO */}
+            {/* TABLERO — timeline por pedido (una fila por pedido, 3 huecos) */}
             {loading ? (
                 <div className="flex items-center justify-center py-24 text-slate-400 text-sm">
                     Cargando pedidos…
                 </div>
             ) : (
-                <div className="flex gap-4 overflow-x-auto pb-4 items-start">
-                    {COLUMNAS.map((estado) => (
-                        <Columna
-                            key={estado}
-                            estado={estado}
-                            pedidos={porEstado[estado]}
-                            onCambiarEstado={cambiarEstado}
-                            cargandoId={cargandoId}
-                        />
-                    ))}
+                <div className="space-y-3">
+                    {/* Cabecera de columnas, sticky para que se vea al hacer scroll */}
+                    <div className="grid grid-cols-3 gap-3 sticky top-0 z-10 bg-white/80 backdrop-blur py-2">
+                        {COLUMNAS.map((estado) => (
+                            <CabeceraColumna
+                                key={estado}
+                                estado={estado}
+                                count={conteoPorEstado[estado]}
+                            />
+                        ))}
+                    </div>
+
+                    {/* Filas: una por pedido */}
+                    {pedidosActivos.length === 0 ? (
+                        <div className="flex items-center justify-center py-24 text-slate-300 text-sm font-medium">
+                            Sin pedidos activos
+                        </div>
+                    ) : (
+                        pedidosActivos.map((pedido) => (
+                            <div
+                                key={pedido.id}
+                                className="grid grid-cols-3 gap-3 items-start"
+                            >
+                                {COLUMNAS.map((estado) =>
+                                    pedido.estado === estado ? (
+                                        <TarjetaPedido
+                                            key={estado}
+                                            pedido={pedido}
+                                            onCambiarEstado={cambiarEstado}
+                                            cargando={cargandoId === pedido.id}
+                                        />
+                                    ) : (
+                                        <HuecoVacio key={estado} />
+                                    ),
+                                )}
+                            </div>
+                        ))
+                    )}
                 </div>
             )}
         </div>
