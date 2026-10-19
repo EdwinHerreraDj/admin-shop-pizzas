@@ -4,7 +4,7 @@ import { Toaster } from "react-hot-toast";
 
 /* PAGES */
 import TiposProductoIndex from "./pages/tipos-producto/TiposProductoIndex";
-import TamanosIndex from "./pages/tamanos/tamanosIndex";
+import TamanosIndex from "./pages/tamanos/TamanosIndex";
 import CategoriasIngredientesIndex from "./pages/categorias-ingredientes/CategoriasIngredientesIndex";
 import IngredientesIndex from "./pages/ingredientes/IngredientesIndex";
 import PreciosIngredientesIndex from "./pages/precios-ingredientes/PreciosIngredientesIndex";
