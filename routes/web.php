@@ -25,7 +25,8 @@ use App\Http\Controllers\Admin\IngredienteApiController;
 
 require __DIR__ . '/auth.php';
 
-Route::middleware('auth')->group(function () {
+// Solo personal del panel. El rol cocina queda limitado a /admin/cocina por RedirectCocina.
+Route::middleware(['auth', 'role:admin,super_admin,cocina'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------

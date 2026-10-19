@@ -27,4 +27,13 @@ class Handler extends ExceptionHandler
             //
         });
     }
+
+    /**
+     * La API siempre responde en JSON (401/403/419…), nunca con redirección a /login,
+     * aunque el cliente no envíe Accept: application/json (p. ej. el fetch de QZ).
+     */
+    protected function shouldReturnJson($request, Throwable $e): bool
+    {
+        return $request->is('api/*') || parent::shouldReturnJson($request, $e);
+    }
 }

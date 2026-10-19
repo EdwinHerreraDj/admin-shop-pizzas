@@ -45,7 +45,26 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::prefix('admin')->group(function () {
+/*
+|--------------------------------------------------------------------------
+| API del panel — requiere sesión del panel (Sanctum stateful, guard web)
+|--------------------------------------------------------------------------
+*/
+
+Route::prefix('admin')->middleware('auth:sanctum')->group(function () {
+
+// ── Panel cocina (también accesible para el rol cocina) ──────────────────
+// GET   /api/admin/pedidos                  → lista pedidos activos de cocina
+// PATCH /api/admin/pedidos/{pedido}/estado  → avanza estado (cocina)
+// GET   /api/admin/configuracion/sonido     → aviso sonoro de nuevos pedidos
+Route::middleware('role:admin,super_admin,cocina')->group(function () {
+    Route::get('pedidos', [PedidoCocinaController::class, 'index']);
+    Route::patch('pedidos/{pedido}/estado', [PedidoCocinaController::class, 'cambiarEstado']);
+    Route::get('configuracion/sonido', [ConfigSonidoController::class, 'show']);
+});
+
+// ── Resto del panel: solo administradores ────────────────────────────────
+Route::middleware('role:admin,super_admin')->group(function () {
     /* Dashboard */
     Route::get('dashboard', [DashboardController::class, 'index']);
 
@@ -128,7 +147,6 @@ Route::prefix('admin')->group(function () {
     Route::put('metodos-pago/{metodo}', [MetodoPagoController::class, 'update']);
 
     /* Configuración de sonido */
-    Route::get('configuracion/sonido', [ConfigSonidoController::class, 'show']);
     Route::put('configuracion/sonido', [ConfigSonidoController::class, 'update']);
     Route::post('configuracion/sonido/archivo', [ConfigSonidoController::class, 'subirArchivo']);
     Route::delete('configuracion/sonido/archivo', [ConfigSonidoController::class, 'eliminarArchivo']);
@@ -157,13 +175,7 @@ Route::prefix('admin')->group(function () {
     Route::put('paginas-legales/{paginaLegal}', [PaginaLegalController::class, 'update']);
     Route::delete('paginas-legales/{paginaLegal}', [PaginaLegalController::class, 'destroy']);
 
-    // ── Panel cocina ──────────────────────────────────────────────────────────
-    // GET  /api/admin/pedidos                      → lista pedidos activos de cocina
-    // PATCH /api/admin/pedidos/{pedido}/estado     → avanza estado (cocina)
-    Route::get('pedidos', [PedidoCocinaController::class, 'index']);
-    Route::patch('pedidos/{pedido}/estado', [PedidoCocinaController::class, 'cambiarEstado']);
-
-      // Estadísticas del día
+    // Estadísticas del día
     Route::get('gestion/resumen', [GestionPedidosController::class, 'resumen']);
 
     // Listado con filtros
@@ -180,6 +192,8 @@ Route::prefix('admin')->group(function () {
 
     // Eliminar un pedido completo
     Route::delete('gestion/pedidos/{pedido}', [GestionPedidosController::class, 'destroy']);
+});
+
 });
 
 
@@ -230,5 +244,8 @@ Route::prefix('shop')->group(function () {
 });
 
 // ── QZ Tray (firma segura para impresión) ─────────────────────────────────
+// El certificado es público por naturaleza; la firma usa la clave privada
+// y solo la pueden pedir usuarios del panel que imprimen tickets.
 Route::get('/qz/certificate', [QzTrayController::class, 'certificate']);
-Route::post('/qz/sign', [QzTrayController::class, 'sign']);
+Route::post('/qz/sign', [QzTrayController::class, 'sign'])
+    ->middleware(['auth:sanctum', 'role:admin,super_admin,cocina']);

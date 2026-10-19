@@ -51,7 +51,14 @@ class AuthenticatedSessionController extends Controller
                 return redirect()->route('home');
             }
 
-            return redirect()->route('unidad');
+            // Cualquier otro rol no tiene acceso al panel
+            Auth::guard('web')->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            return redirect()->route('login')->withErrors([
+                'login' => 'Tu usuario no tiene acceso al panel.',
+            ]);
         }
 
         return redirect()->route('login');

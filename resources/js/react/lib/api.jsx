@@ -4,6 +4,8 @@ const api = axios.create({
     baseURL: "/api/admin",
     withCredentials: true,
     headers: {
+        Accept: "application/json",
+        "X-Requested-With": "XMLHttpRequest",
         "Cache-Control": "no-cache",
         Pragma: "no-cache",
         Expires: "0",
