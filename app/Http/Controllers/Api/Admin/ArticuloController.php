@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Articulo;
+use App\Services\MiniaturaImagen;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -82,6 +83,7 @@ class ArticuloController extends Controller
         // Imagen
         if ($request->hasFile('imagen')) {
             $data['imagen'] = $request->file('imagen')->store('articulos', 'public');
+            MiniaturaImagen::generar($data['imagen']);
         }
 
         return Articulo::create($data);
@@ -143,10 +145,12 @@ class ArticuloController extends Controller
         if ($request->hasFile('imagen')) {
             if ($articulo->imagen) {
                 Storage::disk('public')->delete($articulo->imagen);
+                MiniaturaImagen::eliminar($articulo->imagen);
             }
 
             $data['imagen'] = $request->file('imagen')
                 ->store('articulos', 'public');
+            MiniaturaImagen::generar($data['imagen']);
         }
 
         $articulo->update($data);
@@ -159,6 +163,7 @@ class ArticuloController extends Controller
     {
         if ($articulo->imagen) {
             Storage::disk('public')->delete($articulo->imagen);
+            MiniaturaImagen::eliminar($articulo->imagen);
         }
 
         $articulo->delete();
